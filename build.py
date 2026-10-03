@@ -174,7 +174,7 @@ def home(lang):
     cards = "".join(f"""<article class="card">
   {shot(s, lang)}
   <div class="card-body"><p class="kind">{e(s[lang[:2]]['kind'])}</p><h3>{e(s['name'])}</h3><p>{e(s[lang[:2]]['lead'])}</p>
-  <div class="links"><a class="link" href="{url(lang, 'business/')}#{s['key']}">{e(t['more'])} {icon('arrow')}</a><a class="link quiet" href="{s['url']}">{e(t['visit'])} {icon('ext')}</a></div></div>
+  <div class="links"><a class="link" href="{url(lang, 'services/')}#{s['key']}">{e(t['more'])} {icon('arrow')}</a><a class="link quiet" href="{s['url']}">{e(t['visit'])} {icon('ext')}</a></div></div>
 </article>""" for s in SERVICES)
     sign_role, sign_name = t["msg_sign"]
     body = f"""
@@ -190,26 +190,26 @@ def home(lang):
   </div>
   <div class="wrap"><ul class="facts">{facts}</ul></div>
 </section>
-<section class="sec" id="business">
+<section class="sec" id="services">
   <div class="wrap">{section_head(t['biz_k'], t['biz_t'], t['biz_p'])}<div class="cards">{cards}</div></div>
 </section>
 <section class="sec tint">
   <div class="wrap message-teaser">
     {section_head(t['msg_k'], t['msg_t'])}
     <blockquote><p>{e(t['msg_short'])}</p><footer><span>{e(sign_role)}</span><strong>{e(sign_name)}</strong></footer></blockquote>
-    <a class="link" href="{url(lang, 'company/')}#message">{e(t['more'])} {icon('arrow')}</a>
+    <a class="link" href="{url(lang, 'about/')}#message">{e(t['more'])} {icon('arrow')}</a>
   </div>
 </section>
 <section class="sec">
   <div class="wrap split">
-    <div>{section_head(t['co_k'], t['profile_t'])}<a class="link" href="{url(lang, 'company/')}">{e(t['co_t'])} {icon('arrow')}</a></div>
+    <div>{section_head(t['co_k'], t['profile_t'])}<a class="link" href="{url(lang, 'about/')}">{e(t['co_t'])} {icon('arrow')}</a></div>
     {profile_table(t)}
   </div>
 </section>"""
     return page(lang, "", "", t["desc"], body, "")
 
 
-def company(lang):
+def about(lang):
     t = T[lang]
     sign_role, sign_name = t["msg_sign"]
     local = [("message", t["msg_t"]), ("profile", t["profile_t"]), ("organization", t["org_t"]), ("locations", t["loc_t"]), ("contact", t["contact_t"])]
@@ -225,10 +225,10 @@ def company(lang):
 <section class="sec" id="organization"><div class="wrap narrow"><h2>{e(t['org_t'])}</h2><p class="lead">{e(t['org_p'])}</p>{org_chart(t)}</div></section>
 <section class="sec tint" id="locations"><div class="wrap narrow"><h2>{e(t['loc_t'])}</h2>{locations(t)}</div></section>
 <section class="sec" id="contact"><div class="wrap narrow"><h2>{e(t['contact_t'])}</h2>{contact(lang, t)}</div></section>"""
-    return page(lang, "company/", t["co_t"], t["desc"], body, "company/")
+    return page(lang, "about/", t["co_t"], t["desc"], body, "about/")
 
 
-def business(lang):
+def services(lang):
     t = T[lang]
     rows = []
     for i, s in enumerate(SERVICES):
@@ -242,7 +242,7 @@ def business(lang):
     body = f"""
 <section class="page-head"><div class="wrap">{section_head(t['biz_k'], t['biz_t'], t['biz_page_p'], tag='h1')}</div></section>
 <div class="wrap biz-list">{''.join(rows)}</div>"""
-    return page(lang, "business/", t["biz_t"], t["desc"], body, "business/")
+    return page(lang, "services/", t["biz_t"], t["desc"], body, "services/")
 
 
 def not_found(lang):
@@ -268,12 +268,12 @@ def main():
             shutil.copy2(f, DIST / "assets" / f.name)
     for lang in LANGS:
         write(lang, "", home(lang))
-        write(lang, "company/", company(lang))
-        write(lang, "business/", business(lang))
+        write(lang, "about/", about(lang))
+        write(lang, "services/", services(lang))
         write(lang, "404.html", not_found(lang))
     (DIST / "index.html").write_text(redirect_root(), encoding="utf-8")
     (DIST / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {SITE}/sitemap.xml\n", encoding="utf-8")
-    urls = "".join(f"<url><loc>{SITE}{url(l, p)}</loc></url>" for l in LANGS for p in ("", "business/", "company/"))
+    urls = "".join(f"<url><loc>{SITE}{url(l, p)}</loc></url>" for l in LANGS for p in ("", "services/", "about/"))
     (DIST / "sitemap.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>', encoding="utf-8")
     print(f"built {sum(1 for _ in DIST.rglob('*.html'))} pages into {DIST}")
 

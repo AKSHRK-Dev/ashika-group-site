@@ -1,6 +1,6 @@
 # ASHIKA Group website
 
-Source of group.ashikanw.com: ASHIKA Group's corporate site (Japanese and English).
+Source of group.ashikanw.com: the website of ASHIKA Group (Japanese and English).
 
 ```bash
 python3 build.py          # writes the site into dist/
