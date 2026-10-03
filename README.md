@@ -10,3 +10,4 @@ cd dist && python3 -m http.server 8000
 - All text: `content.py` (Japanese and English side by side)
 - Pages and layout: `build.py`; styles and scripts: `static/`
 - Screenshots of the services: `static/img/`
+- Serving: `node serve.mjs` (port 4400, or `PORT=`), behind the Cloudflare Tunnel; `/` picks the visitor's language
