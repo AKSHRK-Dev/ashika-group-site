@@ -666,9 +666,9 @@ html { overflow-x: hidden; }
 @supports (overflow: clip) { html { overflow-x: clip; } }
 /* phones: nothing waits off to the side (Safari would let the page pan to it); things rise and tip instead */
 @media (max-width: 760px) {
-  .js .rv[data-anim="left"] { transform: translateY(34px) rotate(-1.5deg); transform-origin: 0 100%; }
-  .js .rv[data-anim="right"] { transform: translateY(34px) rotate(1.5deg); transform-origin: 100% 100%; }
-  .js .rv[data-anim="flip"] { transform: perspective(900px) rotateX(18deg) translateY(44px) scale(.95); }
-  .js .rv[data-anim="wipe"] { transform: none; }
-  .js .rv[data-anim="curtain"] { transform: none; }
+  .js .rv[data-anim="left"], .js .rv[data-anim="right"] { transform: translateY(34px); }
+  .js .rv[data-anim="flip"] { transform: translateY(44px) scale(.95); }
+  .js .rv[data-anim="wipe"], .js .rv[data-anim="curtain"] { transform: none; }
+  /* these rules come after the general ".in" one, so end the movement again here */
+  .js .rv[data-anim].in { transform: none; }
 }
