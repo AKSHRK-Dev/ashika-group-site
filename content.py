@@ -764,3 +764,32 @@ T["en-us"].update({
     ],
     "spt_back": "Back to the support program",
 })
+
+
+# ---------------------------------------------------------------------------------------------
+# Home page toys (static/home.js)
+# ---------------------------------------------------------------------------------------------
+T["ja-jp"].update({
+    "facts_back": ["ASHIKA Network・StoriaMC・SABALISU", "いちばん小さいサーバーの月額です", "Storia のコードは GitHub で読めます", "大阪府箕面市から運営しています"],
+    "flip_hint": "タップでめくれます",
+    "greet_morning": "おはようございます。",
+    "greet_day": "こんにちは。",
+    "greet_evening": "こんばんは。",
+    "greet_night": "夜ふかしですね。",
+    "globe_hint": "ドラッグで地球を回せます。昼と夜は、いまの本当の太陽の位置です。",
+    "top_label": "ページの先頭へ戻る",
+    "logo_toast": "キュッ！",
+    "secret_word": "ASHIKA！",
+})
+T["en-us"].update({
+    "facts_back": ["ASHIKA Network, StoriaMC, SABALISU", "Our smallest server, per month", "Storia's code is on GitHub", "Run from Minoh, Osaka"],
+    "flip_hint": "Tap to flip",
+    "greet_morning": "Good morning.",
+    "greet_day": "Hello.",
+    "greet_evening": "Good evening.",
+    "greet_night": "Up late?",
+    "globe_hint": "Drag to spin the Earth. Day and night follow where the sun really is right now.",
+    "top_label": "Back to the top",
+    "logo_toast": "Arf!",
+    "secret_word": "ASHIKA!",
+})

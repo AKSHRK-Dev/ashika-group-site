@@ -40,7 +40,9 @@
     }
   }
 
-  window.AshikaRain = rain; // the game celebrates a new best with it
+  // shared with game.js and home.js
+  window.AshikaRain = rain;
+  window.AshikaToast = (text) => toast(text);
 
   // ---------------------------------------------------------------------------------------------
   // light / dark, with a circle that grows from the button
@@ -280,121 +282,6 @@
     new IntersectionObserver(([en]) => { visible = en.isIntersecting; if (visible) kick(); }).observe(canvas);
     document.addEventListener("visibilitychange", () => { if (!document.hidden) kick(); });
     return { kick };
-  }
-
-  // ---------------------------------------------------------------------------------------------
-  // the globe on the seal's nose: dots on a sphere, and information racing between them
-  // ---------------------------------------------------------------------------------------------
-  const globe = document.getElementById("globe");
-  let spinBoost = 0;
-  if (globe) {
-    const N = 520, pts = [];
-    const ga = Math.PI * (3 - Math.sqrt(5));
-    for (let i = 0; i < N; i++) {
-      const y = 1 - (i / (N - 1)) * 2, r = Math.sqrt(1 - y * y), th = ga * i;
-      pts.push([Math.cos(th) * r, y, Math.sin(th) * r]);
-    }
-    const arcs = [];
-    let rot = 0, spawn = 0;
-    const tilt = -.38, ct = Math.cos(tilt), st = Math.sin(tilt);
-    const turn = (p, a) => {
-      const ca = Math.cos(a), sa = Math.sin(a);
-      const x = p[0] * ca + p[2] * sa, z = -p[0] * sa + p[2] * ca;
-      return [x, p[1] * ct - z * st, p[1] * st + z * ct];
-    };
-    const slerp = (a, b, t) => {
-      const dot = clamp(a[0] * b[0] + a[1] * b[1] + a[2] * b[2], -1, 1), om = Math.acos(dot);
-      if (om < 1e-4) return a;
-      const s1 = Math.sin((1 - t) * om) / Math.sin(om), s2 = Math.sin(t * om) / Math.sin(om);
-      const lift = 1 + Math.sin(Math.PI * t) * .28 * om;
-      return [(a[0] * s1 + b[0] * s2) * lift, (a[1] * s1 + b[1] * s2) * lift, (a[2] * s1 + b[2] * s2) * lift];
-    };
-    animated(globe, (ctx, w, h, dt) => {
-      const R = Math.min(w, h) * .44, cx = w / 2, cy = h / 2;
-      const ink = css("--brand-2") || "#1b60a6", faint = css("--line-strong") || "#c9d3df";
-      rot += dt * (.00018 + spinBoost * .004);
-      spinBoost *= .965;
-      ctx.clearRect(0, 0, w, h);
-      // body
-      const g = ctx.createRadialGradient(cx - R * .35, cy - R * .4, R * .1, cx, cy, R);
-      g.addColorStop(0, "rgba(127,178,234,.22)"); g.addColorStop(1, "rgba(27,96,166,.05)");
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = faint; ctx.lineWidth = 1; ctx.stroke();
-      // dots
-      for (const p of pts) {
-        const q = turn(p, rot);
-        const front = q[2] > 0;
-        ctx.globalAlpha = front ? .35 + q[2] * .65 : .12;
-        ctx.fillStyle = front ? ink : faint;
-        ctx.beginPath(); ctx.arc(cx + q[0] * R, cy - q[1] * R, front ? 1.1 + q[2] * 1.1 : .9, 0, Math.PI * 2); ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-      // information on the move
-      spawn -= dt;
-      if (spawn <= 0 && arcs.length < 9) {
-        arcs.push({ a: pts[(Math.random() * N) | 0], b: pts[(Math.random() * N) | 0], t: 0, speed: .00045 + Math.random() * .0004 });
-        spawn = 260 + Math.random() * 420 - spinBoost * 200;
-      }
-      for (let i = arcs.length - 1; i >= 0; i--) {
-        const arc = arcs[i];
-        arc.t += dt * arc.speed * (1 + spinBoost * 2);
-        if (arc.t > 1.6) { arcs.splice(i, 1); continue; }
-        const head = Math.min(arc.t, 1), tail = Math.max(0, arc.t - .45);
-        ctx.beginPath();
-        let drawing = false;
-        for (let k = 0; k <= 24; k++) {
-          const t = tail + (head - tail) * (k / 24);
-          const q = turn(slerp(arc.a, arc.b, t), rot);
-          const x = cx + q[0] * R, y = cy - q[1] * R;
-          if (q[2] > -.15) { if (!drawing) { ctx.moveTo(x, y); drawing = true; } else ctx.lineTo(x, y); } else drawing = false;
-        }
-        ctx.strokeStyle = ink; ctx.globalAlpha = clamp(1.6 - arc.t, 0, 1) * .85; ctx.lineWidth = 1.6; ctx.stroke();
-        if (arc.t <= 1) {
-          const q = turn(slerp(arc.a, arc.b, head), rot);
-          if (q[2] > -.15) {
-            ctx.globalAlpha = 1; ctx.fillStyle = ink;
-            ctx.shadowColor = ink; ctx.shadowBlur = 10;
-            ctx.beginPath(); ctx.arc(cx + q[0] * R, cy - q[1] * R, 2.6, 0, Math.PI * 2); ctx.fill();
-            ctx.shadowBlur = 0;
-          }
-        }
-        ctx.globalAlpha = 1;
-      }
-    });
-  }
-
-  // poke the seal: the globe hops and spins
-  const stage = document.getElementById("stage");
-  const poke = document.getElementById("poke");
-  const pokeCount = document.getElementById("poke-count");
-  if (stage && poke) {
-    let pokes = Number(store.get("ashika-pokes")) || 0;
-    let hideTimer;
-    poke.addEventListener("click", (ev) => {
-      pokes++;
-      store.set("ashika-pokes", pokes);
-      spinBoost = 1;
-      stage.classList.remove("hop");
-      void stage.offsetWidth;
-      stage.classList.add("hop");
-      if (pokeCount && S.seal_count) {
-        pokeCount.textContent = S.seal_count.replace("{n}", pokes);
-        pokeCount.classList.add("show");
-        clearTimeout(hideTimer);
-        hideTimer = setTimeout(() => pokeCount.classList.remove("show"), 2200);
-      }
-      if (!reduced) {
-        const r = stage.getBoundingClientRect();
-        const pop = document.createElement("span");
-        pop.className = "pop";
-        pop.textContent = "+1";
-        pop.style.left = (ev.clientX ? ev.clientX - r.left : r.width * .4) + "px";
-        pop.style.top = (ev.clientY ? ev.clientY - r.top - 20 : r.height * .6) + "px";
-        pop.addEventListener("animationend", () => pop.remove());
-        stage.appendChild(pop);
-      }
-      if (pokes % 10 === 0) rain(12);
-    });
   }
 
   // ---------------------------------------------------------------------------------------------

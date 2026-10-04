@@ -105,7 +105,8 @@ def page(lang, path, title, desc, body, current="", kind="page"):
     full = f"{title} | ASHIKA Group" if title else f"ASHIKA Group — {t['footer_tag']}"
     alternates = "".join(f'<link rel="alternate" hreflang="{T[l]["lang"]}" href="{SITE}{url(l, path)}">' for l in LANGS)
     strings = {k: t[k] for k in ("seal_count", "konami", "copied", "game_t", "game_how", "game_start", "game_again", "game_over", "game_result",
-                                 "game_new_best", "game_paused", "game_resume_hint", "game_resume", "game_combo", "game_share_text")}
+                                 "game_new_best", "game_paused", "game_resume_hint", "game_resume", "game_combo", "game_share_text",
+                                 "greet_morning", "greet_day", "greet_evening", "greet_night", "logo_toast", "secret_word")}
     strings["game_url"] = url(lang, "game/")
     out = f"""<!doctype html>
 <html lang="{t['lang']}" data-lang="{lang}">
@@ -133,7 +134,7 @@ def page(lang, path, title, desc, body, current="", kind="page"):
 {footer(lang)}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script type="application/json" id="strings">{json.dumps(strings, ensure_ascii=False)}</script>
-<script src="/assets/main.js?v={BUILD}" defer></script>{f'<script src="/assets/game.js?v={BUILD}" defer></script>' if kind in ("game", "lost") else ""}
+<script src="/assets/main.js?v={BUILD}" defer></script>{f'<script src="/assets/game.js?v={BUILD}" defer></script>' if kind in ("game", "lost") else ""}{f'<script src="/assets/home.js?v={BUILD}" defer></script>' if kind == "home" else ""}
 </body>
 </html>"""
     return keep_phrases(out) if lang == "ja-jp" else out
@@ -180,9 +181,10 @@ def run_title(lines, tag="h1", cls="run"):
     return f'<{tag} class="{cls}" aria-label="{e(label)}">{"".join(spans)}</{tag}>'
 
 
-def shot(s, lang, eager=False):
+def shot(s, lang, eager=False, peek=False):
+    seal = f'<img class="peek" src="/assets/seal.png?v={BUILD}" alt="" width="90" height="60" aria-hidden="true">' if peek else ""
     return f"""<figure class="shot"><div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span>{e(s['host'])}</span></div>
-<img src="/assets/{s['img']}?v={BUILD}" width="1200" height="750" alt="{e(s['name'])}{' のトップページ' if lang == 'ja-jp' else ' home page'}"{'' if eager else ' loading="lazy"'}></figure>"""
+<img src="/assets/{s['img']}?v={BUILD}" width="1200" height="750" alt="{e(s['name'])}{' のトップページ' if lang == 'ja-jp' else ' home page'}"{'' if eager else ' loading="lazy"'}>{seal}</figure>"""
 
 
 def section_head(kicker, title, lead="", tag="h2"):
@@ -247,12 +249,17 @@ def count_value(v):
     return (m.group(1), m.group(2), m.group(3)) if m else None
 
 
-def fact_items(facts):
+def fact_items(facts, backs=None):
+    """The facts strip. With backs, each card flips over (hover, or tap on phones) to a second line."""
     out = []
-    for v, k in facts:
+    for i, (v, k) in enumerate(facts):
         c = count_value(v)
         val = f'{e(c[0])}<span class="num" data-to="{c[1]}">{c[1]}</span>{e(c[2])}' if c else e(v)
-        out.append(f"<li class=\"rv\"><b>{val}</b><span>{e(k)}</span></li>")
+        if backs:
+            out.append(f"""<li class="rv flip" tabindex="0"><div class="flip-in"><div class="face"><b>{val}</b><span>{e(k)}</span></div>
+<div class="face back"><span>{e(backs[i])}</span></div></div></li>""")
+        else:
+            out.append(f"<li class=\"rv\"><b>{val}</b><span>{e(k)}</span></li>")
     return "".join(out)
 
 
@@ -276,7 +283,7 @@ def timeline(lang, entries):
 def home(lang):
     t = T[lang]
     cards = "".join(f"""<article class="card rv tilt" style="--d:{i}">
-  {shot(s, lang)}
+  {shot(s, lang, peek=True)}
   <div class="card-body"><p class="kind">{e(s[lang[:2]]['kind'])}</p><h3>{e(s['name'])}</h3><p>{e(s[lang[:2]]['lead'])}</p>
   <div class="links"><a class="link" href="{url(lang, 'services/')}#{s['key']}">{e(t['more'])} {icon('arrow')}</a><a class="link quiet" href="{s['url']}">{e(t['visit'])} {icon('ext')}</a></div></div>
 </article>""" for i, s in enumerate(SERVICES))
@@ -287,6 +294,7 @@ def home(lang):
 <section class="hero">
   <div class="wrap hero-grid">
     <div class="hero-text">
+      <p class="greet rise" data-greet hidden></p>
       <p class="kicker rise">{e(t['hero_k'])}</p>
       {run_title(t['hero_t'])}
       <p class="lead rise" style="--d:2">{e(t['hero_p'])}</p>
@@ -297,9 +305,10 @@ def home(lang):
       <img class="seal" src="/assets/seal.png?v={BUILD}" alt="" width="512" height="339">
       <button class="poke" id="poke" type="button" aria-label="{e(t['seal_hint'])}" title="{e(t['seal_hint'])}"></button>
       <p class="poke-count" id="poke-count" aria-live="polite"></p>
+      <p class="globe-hint">{e(t['globe_hint'])}</p>
     </div>
   </div>
-  <div class="wrap"><ul class="facts">{fact_items(t['facts'])}</ul></div>
+  <div class="wrap"><ul class="facts flips">{fact_items(t['facts'], t['facts_back'])}</ul></div>
 </section>
 {ticker(lang)}
 <section class="sec" id="services">
@@ -345,6 +354,8 @@ def home(lang):
     {profile_table(t)}
   </div>
 </section>"""
+    body += f"""
+<button class="to-top" type="button" aria-label="{e(t['top_label'])}" title="{e(t['top_label'])}"><span class="ball"></span><img src="/assets/seal.png?v={BUILD}" alt="" width="56" height="37"></button>"""
     return page(lang, "", "", t["desc"], body, "", "home")
 
 
