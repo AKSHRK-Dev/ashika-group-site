@@ -41,6 +41,11 @@ def icon(name):
         "download": '<path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/>',
         "code": '<path d="m8 8-5 4 5 4M16 8l5 4-5 4M13.5 5l-3 14"/>',
         "chat": '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 10h8M8 13h5"/>',
+        "clock": '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
+        "palette": '<path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-1 2-2 0-1.7 1.3-3 3-3h1a3 3 0 0 0 3-3c0-5.5-4-10-9-10z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="14.5" cy="7" r="1"/>',
+        "users": '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.8.8 3 2.6 3.5 5.2"/>',
+        "heart": '<path d="M12 20s-7.5-4.6-9-9.5C2 7 4.3 4 7.5 4c2 0 3.5 1.2 4.5 2.7C13 5.2 14.5 4 16.5 4 19.7 4 22 7 21 10.5 19.5 15.4 12 20 12 20z"/>',
+        "doc": '<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 15.5h6M9 9h2"/>',
         "spark": '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>',
     }
     return f'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{paths[name]}</svg>'
@@ -183,9 +188,18 @@ def section_head(kicker, title, lead="", tag="h2"):
     return f'<div class="sec-head rv"><p class="kicker">{e(kicker)}</p><{tag}>{e(title)}</{tag}>{lead_html}</div>'
 
 
-def page_head(kicker, title, lead, extra=""):
+def page_art(name):
+    """The animated drawing on the right of each page head: the icon draws itself, rings turn, chips float."""
+    chips = "".join(f'<span class="ph-chip c{i}"></span>' for i in range(1, 6))
+    return f"""<div class="ph-art" aria-hidden="true" data-parallax>
+  <div class="ph-ring r1"><i></i></div><div class="ph-ring r2"><i></i><i></i></div><div class="ph-ring r3"></div>
+  <div class="ph-core">{icon(name)}</div>{chips}
+</div>"""
+
+
+def page_head(kicker, title, lead, extra="", art="globe"):
     return f"""<section class="page-head"><div class="flow" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-<div class="wrap"><div class="sec-head"><p class="kicker">{e(kicker)}</p>{run_title([title], 'h1', 'run small')}<p class="lead rise">{e(lead)}</p></div>{extra}</div></section>"""
+<div class="wrap"><div class="sec-head"><p class="kicker">{e(kicker)}</p>{run_title([title], 'h1', 'run small')}<p class="lead rise">{e(lead)}</p></div>{extra}{page_art(art)}</div></section>"""
 
 
 def profile_table(t):
@@ -363,7 +377,7 @@ def services(lang):
   <div class="rv slide tilt">{shot(s, lang, eager=i == 0)}</div>
 </section>""")
     body = f"""
-{page_head(t['biz_k'], t['biz_t'], t['biz_page_p'])}
+{page_head(t['biz_k'], t['biz_t'], t['biz_page_p'], art='server')}
 <div class="wrap biz-list">{''.join(rows)}</div>"""
     return page(lang, "services/", t["biz_t"], t["desc"], body, "services/")
 
@@ -377,7 +391,7 @@ def vision(lang):
     values = "".join(f"""<li class="value rv tilt" style="--d:{i}"><span class="v-no">{i + 1:02d}</span><h3>{e(name)}</h3><p>{e(txt)}</p></li>""" for i, (name, txt) in enumerate(t["values"]))
     mapping = "".join(f"""<li class="map-item rv" style="--d:{i}"><img src="/assets/{s['img']}?v={BUILD}" alt="" width="1200" height="750" loading="lazy"><div><p class="kind">{e(s['name'])}</p><h3>{e(t['map'][s['key']][0])}</h3><p>{e(t['map'][s['key']][1])}</p></div></li>""" for i, s in enumerate(SERVICES))
     body = f"""
-{page_head(t['vision_k'], t['vision_t'], t['vision_p'])}
+{page_head(t['vision_k'], t['vision_t'], t['vision_p'], art='spark')}
 <section class="slogan" aria-label="{e(t['footer_tag'])}"><div class="wrap">{run_title(t['hero_t'], 'p', 'run huge')}</div><canvas class="streams" id="streams" aria-hidden="true"></canvas></section>
 {big}
 <section class="sec tint"><div class="wrap"><h2 class="rv">{e(t['values_t'])}</h2><ol class="values">{values}</ol></div></section>
@@ -393,7 +407,7 @@ def history(lang):
         entries = [h for h in HISTORY if h[0].startswith(y)]
         blocks.append(f'<section class="year"><h2 class="year-no rv" data-year="{y}">{y}</h2>{timeline(lang, entries)}</section>')
     body = f"""
-{page_head(t['hist_k'], t['hist_t'], t['hist_p'])}
+{page_head(t['hist_k'], t['hist_t'], t['hist_p'], art='clock')}
 <div class="sec"><div class="wrap narrow">{''.join(blocks)}</div></div>"""
     return page(lang, "history/", t["hist_t"], t["hist_p"], body, "history/", "history")
 
@@ -410,7 +424,7 @@ def technology(lang):
     web = "".join(f'<div class="rv"><dt>{e(k)}</dt><dd>{e(v)}</dd></div>' for k, v in t["web"])
     repos = "".join(f"""<li class="repo rv tilt" style="--d:{i}"><a href="https://github.com/{path}">{icon('github')}<span><b>{e(name)}</b><small>{e(ja if lang == 'ja-jp' else en)}</small></span>{icon('ext')}</a></li>""" for i, (name, path, ja, en) in enumerate(REPOS))
     body = f"""
-{page_head(t['tech_k'], t['tech_t'], t['tech_p'])}
+{page_head(t['tech_k'], t['tech_t'], t['tech_p'], art='code')}
 <section class="sec"><div class="wrap"><ul class="facts stats">{stats}</ul>
 <div class="tech-list">{''.join(blocks)}<article class="tech-block" id="web"><header class="rv"><p class="kind">Web</p><h2>{e(t['web_t'])}</h2></header><dl class="spec">{web}</dl></article></div></div></section>
 <section class="sec tint"><div class="wrap"><h2 class="rv">{e(t['oss_t'])}</h2><p class="lead rv">{e(t['oss_p'])}</p><ul class="repos">{repos}</ul></div></section>"""
@@ -423,7 +437,7 @@ def brand(lang):
     swatches = "".join(f"""<li class="rv" style="--d:{i}"><button class="swatch" type="button" data-copy="{hx}" style="--c:{hx}"><span class="chip-c"></span><b>{e(name)}</b><code>{hx}</code><small>{e(t['color_use'][name])}</small></button></li>""" for i, (name, hx) in enumerate(COLORS))
     dls = "".join(f'<li class="rv"><a class="btn" href="/assets/{fn}" download>{icon("download")}{e(label)}</a></li>' for fn, label in t["dl"])
     body = f"""
-{page_head(t['brand_k'], t['brand_t'], t['brand_p'])}
+{page_head(t['brand_k'], t['brand_t'], t['brand_p'], art='palette')}
 <section class="sec"><div class="wrap split">
   <div><h2 class="rv">{e(t['mark_t'])}</h2><p class="rv">{e(t['mark_p'])}</p><ul class="rules">{rules}</ul></div>
   <div class="mark-boards rv"><div class="board light"><img src="/assets/mark.png?v={BUILD}" alt="ASHIKA Group" width="512" height="339"></div><div class="board dark"><img src="/assets/mark.png?v={BUILD}" alt="" width="512" height="339"></div>
@@ -459,7 +473,7 @@ def join(lang):
     subject = "お手伝い応募" if lang == "ja-jp" else "Joining ASHIKA Group"
     open_pill = f'<p class="rise" style="--d:2"><span class="open-pill big"><i></i>{e(t["join_open"])}</span></p>'
     body = f"""
-{page_head(t['join_k'], t['join_t'], t['join_p'], open_pill)}
+{page_head(t['join_k'], t['join_t'], t['join_p'], open_pill, art='users')}
 <section class="sec"><div class="wrap"><h2 class="rv">{e(t['roles_t'])}</h2><div class="roles">{''.join(roles)}</div></div></section>
 <section class="sec tint"><div class="wrap">
   <h2 class="rv">{e(t['perks_t'])}</h2>
@@ -492,7 +506,7 @@ def terms_page(lang, path, current, kicker, title, lead, dated, date, articles, 
         items = "".join(f"<li>{e(c)}</li>" for c in clauses)
         sections.append(f'<section class="article rv" id="a{n}"><h2>{e(head)}</h2><ol>{items}</ol></section>')
     body = f"""
-{page_head(kicker, title, lead, toc)}
+{page_head(kicker, title, lead, toc, art='doc')}
 <div class="sec"><div class="wrap narrow">
   <p class="terms-date"><time datetime="{date}">{e(dated)}</time></p>
   <div class="terms">{''.join(sections)}</div>
@@ -526,7 +540,7 @@ def support(lang):
     notes = "".join(f"<li>{e(x)}</li>" for x in t["sp_notes"])
     subject = "支援プログラム申請" if lang == "ja-jp" else "Support program application"
     body = f"""
-{page_head(t['sp_k'], t['sp_t'], t['sp_p'])}
+{page_head(t['sp_k'], t['sp_t'], t['sp_p'], art='heart')}
 <section class="sec"><div class="wrap"><h2 class="rv">{e(t['sp_programs_t'])}</h2><div class="programs">{''.join(cards)}</div></div></section>
 <section class="sec tint" id="apply"><div class="wrap split">
   <div><h2 class="rv">{e(t['sp_steps_t'])}</h2><ol class="steps">{steps}</ol></div>

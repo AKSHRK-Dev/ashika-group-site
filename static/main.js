@@ -106,6 +106,37 @@
     requestAnimationFrame(step);
   }
 
+  // How each element enters. Decided here from what the element is, so pages only need class="rv".
+  //   wipe: headings are uncovered left to right   left/right: slide in from the side
+  //   flip: cards tip up in 3D                      curtain: screenshots are drawn open
+  //   pop: small things spring in                   up: everything else rises
+  function animFor(el) {
+    if (el.matches(".sec-head, h2, .year-no")) return "wipe";
+    if (el.matches(".slide, .mark-boards, .type-sample, .map-item")) return "curtain";
+    if (el.matches(".tl-item, .article, .faq")) return "right";
+    if (el.matches("li.step, .points li, .rules li, .spec > div, .profile > div, .loc, .perk")) return "left";
+    if (el.matches(".card, .role-card, .program, .value, .word, .repo, .mf, .board, .tech-block header")) return "flip";
+    if (el.matches(".facts li, .swatches li, .downloads li, .sp-nums div, .stats li")) return "pop";
+    const split = el.closest(".split, .biz, .join-teaser-in, .sp-teaser-in, .perk-hero");
+    if (split && split !== el) {
+      const column = [...split.children].find((child) => child === el || child.contains(el));
+      if (column) return [...split.children].indexOf(column) % 2 === 0 ? "left" : "right";
+    }
+    return "up";
+  }
+  document.querySelectorAll(".rv").forEach((el) => {
+    if (!el.dataset.anim) el.dataset.anim = animFor(el);
+    // things in a row come in one after another, unless the page set its own order
+    if (!el.style.getPropertyValue("--d") && el.parentElement) {
+      const siblings = [...el.parentElement.children].filter((c) => c.classList.contains("rv"));
+      if (siblings.length > 1) el.style.setProperty("--d", String(Math.min(siblings.indexOf(el), 8)));
+    }
+  });
+  // cards in a grid alternate the side they tip from
+  document.querySelectorAll('[data-anim="flip"]').forEach((el) => {
+    el.style.setProperty("--flip", [...el.parentElement.children].indexOf(el) % 2 ? "1" : "-1");
+  });
+
   const seen = new IntersectionObserver((entries) => {
     entries.forEach((en) => {
       if (!en.isIntersecting) return;
@@ -114,7 +145,28 @@
       seen.unobserve(en.target);
     });
   }, { rootMargin: "0px 0px -8% 0px", threshold: .12 });
-  document.querySelectorAll(".rv").forEach((el) => seen.observe(el));
+  // Wipes and curtains start fully clipped, and a fully clipped element never counts as visible.
+  // Watch their (unclipped) parent instead and open them when it scrolls in.
+  const clipped = new Map();
+  const seenParent = new IntersectionObserver((entries) => {
+    entries.forEach((en) => {
+      if (!en.isIntersecting) return;
+      (clipped.get(en.target) || []).forEach((el) => {
+        el.classList.add("in");
+        el.querySelectorAll(".num[data-to]").forEach(countUp);
+      });
+      seenParent.unobserve(en.target);
+    });
+  }, { rootMargin: "0px 0px -12% 0px", threshold: 0 });
+  document.querySelectorAll(".rv").forEach((el) => {
+    if ((el.dataset.anim === "wipe" || el.dataset.anim === "curtain") && el.parentElement) {
+      const parent = el.parentElement;
+      if (!clipped.has(parent)) { clipped.set(parent, []); seenParent.observe(parent); }
+      clipped.get(parent).push(el);
+    } else {
+      seen.observe(el);
+    }
+  });
 
   // ---------------------------------------------------------------------------------------------
   // header shadow, reading progress, timeline fill
@@ -167,6 +219,23 @@
       });
       el.addEventListener("pointerleave", () => { el.style.setProperty("--tx", "0px"); el.style.setProperty("--ty", "0px"); });
     });
+  }
+
+  // the drawing in each page head drifts with the scroll and leans toward the pointer
+  const arts = [...document.querySelectorAll("[data-parallax]")];
+  if (arts.length && !reduced) {
+    const drift = () => arts.forEach((a) => a.style.setProperty("--sy", (scrollY * 0.25).toFixed(1) + "px"));
+    addEventListener("scroll", () => requestAnimationFrame(drift), { passive: true });
+    if (finePointer) {
+      document.querySelectorAll(".page-head").forEach((head) => {
+        head.addEventListener("pointermove", (ev) => {
+          const r = head.getBoundingClientRect();
+          head.style.setProperty("--px", ((ev.clientX - r.left) / r.width - .5).toFixed(3));
+          head.style.setProperty("--py", ((ev.clientY - r.top) / r.height - .5).toFixed(3));
+        });
+        head.addEventListener("pointerleave", () => { head.style.setProperty("--px", "0"); head.style.setProperty("--py", "0"); });
+      });
+    }
   }
 
   // ---------------------------------------------------------------------------------------------
