@@ -140,9 +140,10 @@
   const seen = new IntersectionObserver((entries) => {
     entries.forEach((en) => {
       if (!en.isIntersecting) return;
+      seen.unobserve(en.target);
+      if (en.target.classList.contains("in")) return; // already shown by the scroll check
       en.target.classList.add("in");
       en.target.querySelectorAll(".num[data-to]").forEach(countUp);
-      seen.unobserve(en.target);
     });
   }, { rootMargin: "0px 0px -8% 0px", threshold: .12 });
   // Wipes and curtains start fully clipped, and a fully clipped element never counts as visible.
@@ -152,6 +153,7 @@
     entries.forEach((en) => {
       if (!en.isIntersecting) return;
       (clipped.get(en.target) || []).forEach((el) => {
+        if (el.classList.contains("in")) return;
         el.classList.add("in");
         el.querySelectorAll(".num[data-to]").forEach(countUp);
       });
@@ -174,8 +176,24 @@
   const header = document.querySelector(".site-header");
   const timelines = [...document.querySelectorAll(".timeline")];
   let ticking = false;
+  // Backup for the observers above: some browsers (seen on iPhone Safari) do not always report
+  // elements as visible. Anything whose top is on screen is shown, whatever the observers say.
+  const pending = new Set(document.querySelectorAll(".rv"));
+  function revealVisible() {
+    for (const el of pending) {
+      if (el.classList.contains("in")) { pending.delete(el); continue; }
+      const r = el.getBoundingClientRect();
+      if (r.top < innerHeight * 0.94 && r.bottom > 0) {
+        el.classList.add("in");
+        el.querySelectorAll(".num[data-to]").forEach(countUp);
+        pending.delete(el);
+      }
+    }
+  }
+
   function onScroll() {
     ticking = false;
+    revealVisible();
     const y = scrollY, max = document.documentElement.scrollHeight - innerHeight;
     if (header) {
       header.classList.toggle("scrolled", y > 8);
