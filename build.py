@@ -326,7 +326,7 @@ def home(lang):
 <section class="sec sp-teaser">
   <div class="wrap sp-teaser-in rv">
     <div><p class="kicker">{e(t['sp_k'])}</p><h2>{e(t['sp_home_t'])}</h2><p class="lead">{e(t['sp_home_p'])}</p>
-    <a class="btn primary magnet" href="{url(lang, 'support/')}">{e(t['sp_t'])} {icon('arrow')}</a></div>
+    <a class="btn primary magnet" href="{url(lang, 'supportprogram/')}">{e(t['sp_t'])} {icon('arrow')}</a></div>
     <div class="sp-nums" aria-hidden="true">{''.join(f'<div><b class="num" data-to="{n}">{n}</b><span>{e(name)}</span></div>' for _, name, _, n, *_ in t['sp_programs'])}</div>
   </div>
 </section>
@@ -550,14 +550,14 @@ def support(lang):
 </div></section>
 <section class="sec"><div class="wrap narrow"><h2 class="rv">{e(t['sp_faq_t'])}</h2><div class="faqs">{faq}</div></div></section>
 <section class="sec tint"><div class="wrap narrow"><div class="disclaimer rv"><h2>{e(t['sp_notes_t'])}</h2><ul>{notes}</ul>
-<a class="link" href="{url(lang, 'support/terms/')}">{e(t['sp_terms_link'])} {icon('arrow')}</a></div></div></section>"""
-    return page(lang, "support/", t["sp_t"], t["sp_p"], body, "support/", "support")
+<a class="link" href="{url(lang, 'supportprogram/terms/')}">{e(t['sp_terms_link'])} {icon('arrow')}</a></div></div></section>"""
+    return page(lang, "supportprogram/", t["sp_t"], t["sp_p"], body, "supportprogram/", "support")
 
 
 def support_terms(lang):
     t = T[lang]
-    return terms_page(lang, "support/terms/", "support/", t["spt_k"], t["spt_t"], t["spt_p"], t["spt_dated"], SUPPORT_TERMS_DATE,
-                      t["spt_terms"], "support/", t["spt_back"])
+    return terms_page(lang, "supportprogram/terms/", "supportprogram/", t["spt_k"], t["spt_t"], t["spt_p"], t["spt_dated"], SUPPORT_TERMS_DATE,
+                      t["spt_terms"], "supportprogram/", t["spt_back"])
 
 
 def not_found(lang):
@@ -572,13 +572,22 @@ def not_found(lang):
     return page(lang, "404.html", title, text, body, "", "lost")
 
 
+def moved(target):
+    """A page that sends visitors (and search engines) on to the address a page moved to."""
+    return f"""<!doctype html><meta charset="utf-8"><title>ASHIKA Group</title>
+<link rel="canonical" href="{SITE}{target}"><meta name="robots" content="noindex">
+<meta http-equiv="refresh" content="0; url={target}">
+<script>location.replace("{target}" + location.hash)</script>
+<a href="{target}">{SITE}{target}</a>"""
+
+
 def redirect_root():
     return """<!doctype html><meta charset="utf-8"><title>ASHIKA Group</title>
 <script>var l=(navigator.language||"ja").toLowerCase().indexOf("ja")===0?"ja-jp":"en-us";try{var s=document.cookie.match(/ashika_lang=([a-z-]+)/);if(s)l=s[1]}catch(e){}location.replace("/"+l+"/")</script>
 <noscript><meta http-equiv="refresh" content="0; url=/ja-jp/"></noscript><a href="/ja-jp/">日本語</a> · <a href="/en-us/">English</a>"""
 
 
-PAGES = [("", home), ("about/", about), ("services/", services), ("vision/", vision), ("history/", history), ("technology/", technology), ("brand/", brand), ("join/", join), ("join/terms/", join_terms), ("support/", support), ("support/terms/", support_terms)]
+PAGES = [("", home), ("about/", about), ("services/", services), ("vision/", vision), ("history/", history), ("technology/", technology), ("brand/", brand), ("join/", join), ("join/terms/", join_terms), ("supportprogram/", support), ("supportprogram/terms/", support_terms)]
 
 
 def main():
@@ -593,6 +602,10 @@ def main():
             write(lang, path, fn(lang))
         write(lang, "404.html", not_found(lang))
     (DIST / "index.html").write_text(redirect_root(), encoding="utf-8")
+    # the support program moved from /support/ to /supportprogram/: keep the old links working
+    for lang in LANGS:
+        for old, new in (("support/", "supportprogram/"), ("support/terms/", "supportprogram/terms/")):
+            write(lang, old, moved(url(lang, new)))
     (DIST / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {SITE}/sitemap.xml\n", encoding="utf-8")
     urls = "".join(f"<url><loc>{SITE}{url(l, p)}</loc></url>" for l in LANGS for p, _ in PAGES)
     (DIST / "sitemap.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>', encoding="utf-8")

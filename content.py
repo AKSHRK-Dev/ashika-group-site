@@ -84,8 +84,8 @@ T = {
         "name": "日本語",
         "title": "ASHIKA Group",
         "desc": "ASHIKA Group は、サーバーホスティングの ASHIKA Network、Minecraft サーバーソフトウェアの StoriaMC、Minecraft サーバーリストの SABALISU を運営しています。",
-        "nav": [("services/", "サービス"), ("vision/", "理念"), ("history/", "沿革"), ("support/", "支援プログラム"), ("join/", "お手伝い募集"), ("about/", "ASHIKA Group について")],
-        "footer_links": [("about/", "ASHIKA Group について"), ("vision/", "理念"), ("history/", "沿革"), ("technology/", "技術・設備"), ("support/", "支援プログラム"), ("join/", "お手伝い募集"), ("brand/", "ブランド"), ("about/#contact", "お問い合わせ")],
+        "nav": [("services/", "サービス"), ("vision/", "理念"), ("history/", "沿革"), ("supportprogram/", "支援プログラム"), ("join/", "お手伝い募集"), ("about/", "ASHIKA Group について")],
+        "footer_links": [("about/", "ASHIKA Group について"), ("vision/", "理念"), ("history/", "沿革"), ("technology/", "技術・設備"), ("supportprogram/", "支援プログラム"), ("join/", "お手伝い募集"), ("brand/", "ブランド"), ("about/#contact", "お問い合わせ")],
         "skip": "本文へ移動",
         "menu": "メニュー",
         "theme": "表示の明るさを切り替える",
@@ -143,8 +143,8 @@ T = {
         "name": "English",
         "title": "ASHIKA Group",
         "desc": "ASHIKA Group runs ASHIKA Network (server hosting), StoriaMC (Minecraft server software) and SABALISU (a Minecraft server list).",
-        "nav": [("services/", "Services"), ("vision/", "Vision"), ("history/", "History"), ("support/", "Support program"), ("join/", "Join us"), ("about/", "About us")],
-        "footer_links": [("about/", "About us"), ("vision/", "Vision"), ("history/", "History"), ("technology/", "Technology"), ("support/", "Support program"), ("join/", "Join us"), ("brand/", "Brand"), ("about/#contact", "Contact")],
+        "nav": [("services/", "Services"), ("vision/", "Vision"), ("history/", "History"), ("supportprogram/", "Support program"), ("join/", "Join us"), ("about/", "About us")],
+        "footer_links": [("about/", "About us"), ("vision/", "Vision"), ("history/", "History"), ("technology/", "Technology"), ("supportprogram/", "Support program"), ("join/", "Join us"), ("brand/", "Brand"), ("about/#contact", "Contact")],
         "skip": "Skip to content",
         "menu": "Menu",
         "theme": "Switch light and dark",
@@ -597,7 +597,7 @@ T["en-us"].update({
 
 
 # ---------------------------------------------------------------------------------------------
-# Support program: free ASHIKA Network servers for nonprofits and individuals (/support/, /support/terms/)
+# Support program: free ASHIKA Network servers for nonprofits and individuals (/supportprogram/, /supportprogram/terms/)
 # ---------------------------------------------------------------------------------------------
 SUPPORT_NONPROFIT_SERVERS = 20
 SUPPORT_PERSONAL_SERVERS = 10
