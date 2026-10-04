@@ -7,7 +7,8 @@ import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 
-from content import COLORS, HISTORY, JOIN_SERVERS, REPOS, SERVICES, TERMS_DATE, T
+from content import (COLORS, HISTORY, JOIN_SERVERS, REPOS, SERVICES, SUPPORT_NONPROFIT_SERVERS, SUPPORT_PERSONAL_SERVERS,
+                     SUPPORT_TERMS_DATE, TERMS_DATE, T)
 
 ROOT = Path(__file__).resolve().parent
 DIST = ROOT / "dist"
@@ -308,6 +309,13 @@ def home(lang):
     {timeline(lang, recent)}
   </div>
 </section>
+<section class="sec sp-teaser">
+  <div class="wrap sp-teaser-in rv">
+    <div><p class="kicker">{e(t['sp_k'])}</p><h2>{e(t['sp_home_t'])}</h2><p class="lead">{e(t['sp_home_p'])}</p>
+    <a class="btn primary magnet" href="{url(lang, 'support/')}">{e(t['sp_t'])} {icon('arrow')}</a></div>
+    <div class="sp-nums" aria-hidden="true">{''.join(f'<div><b class="num" data-to="{n}">{n}</b><span>{e(name)}</span></div>' for _, name, _, n, *_ in t['sp_programs'])}</div>
+  </div>
+</section>
 <section class="sec join-teaser">
   <div class="wrap join-teaser-in rv">
     <div><p class="kicker">{e(t['join_k'])} <span class="open-pill"><i></i>{e(t['join_open'])}</span></p><h2>{e(t['join_home_t'])}</h2><p class="lead">{e(t['join_home_p'])}</p>
@@ -473,24 +481,69 @@ def join(lang):
     return page(lang, "join/", t["join_t"], t["join_p"], body, "join/", "join")
 
 
-def join_terms(lang):
+def terms_page(lang, path, current, kicker, title, lead, dated, date, articles, back_path, back_label):
+    """Terms with numbered articles (member terms, support program terms)."""
     t = T[lang]
     toc = '<nav class="toc rise" style="--d:2">' + "".join(
-        f'<a href="#a{n}">{e(t["terms_article"].format(n=n))}</a>' for n in range(1, len(t["terms"]) + 1)) + "</nav>"
-    articles = []
-    for n, (title, clauses) in enumerate(t["terms"], 1):
-        head = f'{t["terms_article"].format(n=n)}（{title}）' if lang == "ja-jp" else f'{t["terms_article"].format(n=n)}. {title}'
+        f'<a href="#a{n}">{e(t["terms_article"].format(n=n))}</a>' for n in range(1, len(articles) + 1)) + "</nav>"
+    sections = []
+    for n, (name, clauses) in enumerate(articles, 1):
+        head = f'{t["terms_article"].format(n=n)}（{name}）' if lang == "ja-jp" else f'{t["terms_article"].format(n=n)}. {name}'
         items = "".join(f"<li>{e(c)}</li>" for c in clauses)
-        articles.append(f'<section class="article rv" id="a{n}"><h2>{e(head)}</h2><ol>{items}</ol></section>')
+        sections.append(f'<section class="article rv" id="a{n}"><h2>{e(head)}</h2><ol>{items}</ol></section>')
     body = f"""
-{page_head(t['terms_k'], t['terms_t'], t['terms_p'], toc)}
+{page_head(kicker, title, lead, toc)}
 <div class="sec"><div class="wrap narrow">
-  <p class="terms-date"><time datetime="{TERMS_DATE}">{e(t['terms_dated'])}</time></p>
-  <div class="terms">{''.join(articles)}</div>
+  <p class="terms-date"><time datetime="{date}">{e(dated)}</time></p>
+  <div class="terms">{''.join(sections)}</div>
   <p class="terms-end">{e(t['footer_tag'])} — ASHIKA Group</p>
-  <a class="link" href="{url(lang, 'join/')}">{e(t['terms_back'])} {icon('arrow')}</a>
+  <a class="link" href="{url(lang, back_path)}">{e(back_label)} {icon('arrow')}</a>
 </div></div>"""
-    return page(lang, "join/terms/", t["terms_t"], t["terms_p"], body, "join/", "terms")
+    return page(lang, path, title, lead, body, current, "terms")
+
+
+def join_terms(lang):
+    t = T[lang]
+    return terms_page(lang, "join/terms/", "join/", t["terms_k"], t["terms_t"], t["terms_p"], t["terms_dated"], TERMS_DATE,
+                      t["terms"], "join/", t["terms_back"])
+
+
+def support(lang):
+    t = T[lang]
+    cards = []
+    for i, (key, name, sub, count, lead, who, need) in enumerate(t["sp_programs"]):
+        who_items = "".join(f"<li>{icon('check')}<span>{e(x)}</span></li>" for x in who)
+        need_items = "".join(f"<li>{e(x)}</li>" for x in need)
+        note = f'<p class="sp-note">{e(t["sp_hardship_note"])}</p>' if key == "personal" else ""
+        cards.append(f"""<article class="program rv tilt {key}" id="{key}" style="--d:{i}">
+  <div class="program-top"><b><span class="num" data-to="{count}">{count}</span></b><span>{e(t['sp_unit'])}</span></div>
+  <p class="kind">{e(sub)}</p><h3>{e(name)}</h3><p>{e(lead)} {e(t['sp_more'])}</p>
+  <h4>{e(t['sp_who'])}</h4><ul class="points">{who_items}</ul>
+  <h4>{e(t['sp_need'])}</h4><ul class="need">{need_items}</ul>{note}
+</article>""")
+    steps = "".join(f'<li class="step rv" style="--d:{i}"><span class="step-no">{i + 1}</span><div><h3>{e(a)}</h3><p>{e(b)}</p></div></li>' for i, (a, b) in enumerate(t["sp_steps"]))
+    faq = "".join(f'<details class="faq rv"><summary>{e(q)}</summary><p>{e(a)}</p></details>' for q, a in t["sp_faq"])
+    notes = "".join(f"<li>{e(x)}</li>" for x in t["sp_notes"])
+    subject = "支援プログラム申請" if lang == "ja-jp" else "Support program application"
+    body = f"""
+{page_head(t['sp_k'], t['sp_t'], t['sp_p'])}
+<section class="sec"><div class="wrap"><h2 class="rv">{e(t['sp_programs_t'])}</h2><div class="programs">{''.join(cards)}</div></div></section>
+<section class="sec tint" id="apply"><div class="wrap split">
+  <div><h2 class="rv">{e(t['sp_steps_t'])}</h2><ol class="steps">{steps}</ol></div>
+  <div class="apply-box rv"><h2>{e(t['sp_steps'][0][0])}</h2><p>{e(t['sp_steps'][0][1])}</p>
+    <div class="actions"><button class="btn primary magnet" type="button" data-mail="support" data-domain="ashikanw.com" data-subject="{e(subject)}">{icon('mail')}{e(t['sp_apply_mail'])}</button>
+    <a class="btn" href="https://link.ashikanw.com/discord">{icon('chat')}{e(t['sp_apply_discord'])}</a></div></div>
+</div></section>
+<section class="sec"><div class="wrap narrow"><h2 class="rv">{e(t['sp_faq_t'])}</h2><div class="faqs">{faq}</div></div></section>
+<section class="sec tint"><div class="wrap narrow"><div class="disclaimer rv"><h2>{e(t['sp_notes_t'])}</h2><ul>{notes}</ul>
+<a class="link" href="{url(lang, 'support/terms/')}">{e(t['sp_terms_link'])} {icon('arrow')}</a></div></div></section>"""
+    return page(lang, "support/", t["sp_t"], t["sp_p"], body, "support/", "support")
+
+
+def support_terms(lang):
+    t = T[lang]
+    return terms_page(lang, "support/terms/", "support/", t["spt_k"], t["spt_t"], t["spt_p"], t["spt_dated"], SUPPORT_TERMS_DATE,
+                      t["spt_terms"], "support/", t["spt_back"])
 
 
 def not_found(lang):
@@ -511,7 +564,7 @@ def redirect_root():
 <noscript><meta http-equiv="refresh" content="0; url=/ja-jp/"></noscript><a href="/ja-jp/">日本語</a> · <a href="/en-us/">English</a>"""
 
 
-PAGES = [("", home), ("about/", about), ("services/", services), ("vision/", vision), ("history/", history), ("technology/", technology), ("brand/", brand), ("join/", join), ("join/terms/", join_terms)]
+PAGES = [("", home), ("about/", about), ("services/", services), ("vision/", vision), ("history/", history), ("technology/", technology), ("brand/", brand), ("join/", join), ("join/terms/", join_terms), ("support/", support), ("support/terms/", support_terms)]
 
 
 def main():

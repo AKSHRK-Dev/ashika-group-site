@@ -582,3 +582,30 @@ html.theme-switch::view-transition-old(root), html.theme-switch::view-transition
   .join-teaser-in, .perk-hero { grid-template-columns: 1fr; padding: 28px 24px; }
   .racks { max-width: 360px; }
 }
+
+/* support program */
+.programs { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.program { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 30px 30px 26px; box-shadow: var(--shadow); overflow: hidden; scroll-margin-top: 84px; }
+.program-top { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
+.program-top b { font-size: clamp(64px, 8vw, 96px); line-height: .9; font-weight: 900; color: var(--brand-2); letter-spacing: -.02em; }
+.program.personal .program-top b { color: #0b8a63; }
+.program-top > span { font-weight: 700; color: var(--ink-2); }
+.program h3 { font-size: 24px; margin-bottom: 8px; }
+.program h4 { font-size: 14px; margin: 18px 0 8px; color: var(--brand-2); letter-spacing: .04em; }
+.program .points { margin-bottom: 0; }
+.need { margin: 0; padding-left: 1.2em; color: var(--ink-2); font-size: 15px; }
+.need li { margin-bottom: 4px; }
+.sp-note { margin: 14px 0 0; padding: 12px 14px; border-radius: 10px; background: var(--bg-tint); font-size: 14px; }
+.sp-teaser { padding-bottom: 0; }
+.sp-teaser-in { display: grid; grid-template-columns: 1.3fr .7fr; gap: 40px; align-items: center; padding: 40px 44px; border: 1px solid var(--line); border-radius: calc(var(--radius) + 6px); background: linear-gradient(135deg, color-mix(in srgb, #10b981 10%, var(--surface)), var(--surface) 60%); }
+.sp-teaser h2 { font-size: clamp(26px, 3.4vw, 36px); }
+.sp-nums { display: flex; gap: 28px; justify-content: center; }
+.sp-nums div { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.sp-nums b { font-size: clamp(56px, 7vw, 84px); line-height: 1; font-weight: 900; color: var(--brand-2); }
+.sp-nums div + div b { color: #0b8a63; }
+.sp-nums span { font-size: 13px; font-weight: 600; color: var(--muted); }
+@media (max-width: 960px) {
+  .programs { grid-template-columns: 1fr; }
+  .sp-teaser-in { grid-template-columns: 1fr; padding: 28px 24px; }
+  .sp-nums { justify-content: flex-start; }
+}
