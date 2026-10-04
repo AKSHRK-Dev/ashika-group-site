@@ -659,3 +659,13 @@ html.theme-switch::view-transition-old(root), html.theme-switch::view-transition
   .sp-teaser-in { grid-template-columns: 1fr; padding: 28px 24px; }
   .sp-nums { justify-content: flex-start; }
 }
+
+/* Elements waiting to slide in sit off to the side. iPhone Safari lets the page pan sideways to them
+   unless the containers themselves clip, so clip at main and the footer (and the page as a fallback). */
+html { overflow-x: hidden; }
+@supports (overflow: clip) { html { overflow-x: clip; } }
+main, .site-footer, .page-head, .hero, .sec { overflow-x: clip; }
+@media (max-width: 760px) {
+  .js .rv[data-anim="left"] { transform: translateX(-36px); }
+  .js .rv[data-anim="right"] { transform: translateX(36px); }
+}
