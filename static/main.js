@@ -84,7 +84,7 @@
 
   // the address is put together only when someone asks for it (no plain address in the page)
   document.querySelectorAll("[data-mail]").forEach((b) => b.addEventListener("click", () => {
-    location.href = "mailto:" + b.dataset.mail + "@" + b.dataset.domain;
+    location.href = "mailto:" + b.dataset.mail + "@" + b.dataset.domain + (b.dataset.subject ? "?subject=" + encodeURIComponent(b.dataset.subject) : "");
   }));
 
   // ---------------------------------------------------------------------------------------------

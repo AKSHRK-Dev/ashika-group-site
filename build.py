@@ -7,7 +7,7 @@ import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 
-from content import COLORS, HISTORY, REPOS, SERVICES, T
+from content import COLORS, HISTORY, JOIN_SERVERS, REPOS, SERVICES, TERMS_DATE, T
 
 ROOT = Path(__file__).resolve().parent
 DIST = ROOT / "dist"
@@ -38,6 +38,8 @@ def icon(name):
         "check": '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
         "github": '<path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/>',
         "download": '<path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/>',
+        "code": '<path d="m8 8-5 4 5 4M16 8l5 4-5 4M13.5 5l-3 14"/>',
+        "chat": '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 10h8M8 13h5"/>',
         "spark": '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>',
     }
     return f'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{paths[name]}</svg>'
@@ -306,6 +308,13 @@ def home(lang):
     {timeline(lang, recent)}
   </div>
 </section>
+<section class="sec join-teaser">
+  <div class="wrap join-teaser-in rv">
+    <div><p class="kicker">{e(t['join_k'])} <span class="open-pill"><i></i>{e(t['join_open'])}</span></p><h2>{e(t['join_home_t'])}</h2><p class="lead">{e(t['join_home_p'])}</p>
+    <a class="btn primary magnet" href="{url(lang, 'join/')}">{e(t['join_t'])} {icon('arrow')}</a></div>
+    <div class="racks" aria-hidden="true">{''.join(f'<span style="--d:{i}"><i></i><i></i></span>' for i in range(JOIN_SERVERS))}</div>
+  </div>
+</section>
 <section class="sec tint">
   <div class="wrap split">
     <div>{section_head(t['co_k'], t['profile_t'])}<a class="link rv" href="{url(lang, 'about/')}">{e(t['co_t'])} {icon('arrow')}</a></div>
@@ -421,6 +430,69 @@ def brand(lang):
     return page(lang, "brand/", t["brand_t"], t["brand_p"], body, "brand/", "brand")
 
 
+def join(lang):
+    t = T[lang]
+    roles = []
+    for i, (key, name, sub, lead, tasks, want) in enumerate(t["roles"]):
+        items = "".join(f"<li>{icon('check')}<span>{e(x)}</span></li>" for x in tasks)
+        roles.append(f"""<article class="role-card rv tilt" id="{key}" style="--d:{i}">
+  <div class="role-icon">{icon('code' if key == 'engineer' else 'chat')}</div>
+  <p class="kind">{e(sub)}</p><h3>{e(name)}</h3><p>{e(lead)}</p>
+  <ul class="points">{items}</ul>
+  <div class="want"><b>{e(t['roles_want'])}</b><p>{e(want)}</p></div>
+</article>""")
+    first, *rest = t["perks"]
+    racks = "".join(f'<span style="--d:{i}"><i></i><i></i></span>' for i in range(JOIN_SERVERS))
+    perks = "".join(f'<li class="perk rv" style="--d:{i}">{icon(ic)}<div><h3>{e(a)}</h3><p>{e(b)}</p></div></li>' for i, (ic, a, b) in enumerate(rest))
+    steps = "".join(f'<li class="step rv" style="--d:{i}"><span class="step-no">{i + 1}</span><div><h3>{e(a)}</h3><p>{e(b)}</p></div></li>' for i, (a, b) in enumerate(t["steps"]))
+    apply_items = "".join(f"<li>{e(x)}</li>" for x in t["apply_items"])
+    faq = "".join(f'<details class="faq rv"><summary>{e(q)}</summary><p>{e(a)}</p></details>' for q, a in t["join_faq"])
+    disclaimer = "".join(f"<li>{e(x)}</li>" for x in t["disclaimer"])
+    subject = "お手伝い応募" if lang == "ja-jp" else "Joining ASHIKA Group"
+    open_pill = f'<p class="rise" style="--d:2"><span class="open-pill big"><i></i>{e(t["join_open"])}</span></p>'
+    body = f"""
+{page_head(t['join_k'], t['join_t'], t['join_p'], open_pill)}
+<section class="sec"><div class="wrap"><h2 class="rv">{e(t['roles_t'])}</h2><div class="roles">{''.join(roles)}</div></div></section>
+<section class="sec tint"><div class="wrap">
+  <h2 class="rv">{e(t['perks_t'])}</h2>
+  <div class="perk-hero rv">
+    <div class="perk-big"><b><span class="num" data-to="{JOIN_SERVERS}">{JOIN_SERVERS}</span></b><div><h3>{e(first[1])}</h3><p>{e(first[2])}</p></div></div>
+    <div class="racks" aria-hidden="true">{racks}</div>
+  </div>
+  <ul class="perks">{perks}</ul>
+</div></section>
+<section class="sec" id="apply"><div class="wrap split">
+  <div><h2 class="rv">{e(t['steps_t'])}</h2><ol class="steps">{steps}</ol></div>
+  <div class="apply-box rv"><h2>{e(t['apply_t'])}</h2><p>{e(t['apply_p'])}</p><ul>{apply_items}</ul>
+    <div class="actions"><button class="btn primary magnet" type="button" data-mail="support" data-domain="ashikanw.com" data-subject="{e(subject)}">{icon('mail')}{e(t['apply_mail'])}</button>
+    <a class="btn" href="https://link.ashikanw.com/discord">{icon('chat')}{e(t['apply_discord'])}</a></div></div>
+</div></section>
+<section class="sec tint"><div class="wrap narrow"><h2 class="rv">{e(t['join_faq_t'])}</h2><div class="faqs">{faq}</div></div></section>
+<section class="sec"><div class="wrap narrow"><div class="disclaimer rv"><h2>{e(t['disclaimer_t'])}</h2><ul>{disclaimer}</ul>
+<a class="link" href="{url(lang, 'join/terms/')}">{e(t['terms_link'])} {icon('arrow')}</a></div></div></section>"""
+    return page(lang, "join/", t["join_t"], t["join_p"], body, "join/", "join")
+
+
+def join_terms(lang):
+    t = T[lang]
+    toc = '<nav class="toc rise" style="--d:2">' + "".join(
+        f'<a href="#a{n}">{e(t["terms_article"].format(n=n))}</a>' for n in range(1, len(t["terms"]) + 1)) + "</nav>"
+    articles = []
+    for n, (title, clauses) in enumerate(t["terms"], 1):
+        head = f'{t["terms_article"].format(n=n)}（{title}）' if lang == "ja-jp" else f'{t["terms_article"].format(n=n)}. {title}'
+        items = "".join(f"<li>{e(c)}</li>" for c in clauses)
+        articles.append(f'<section class="article rv" id="a{n}"><h2>{e(head)}</h2><ol>{items}</ol></section>')
+    body = f"""
+{page_head(t['terms_k'], t['terms_t'], t['terms_p'], toc)}
+<div class="sec"><div class="wrap narrow">
+  <p class="terms-date"><time datetime="{TERMS_DATE}">{e(t['terms_dated'])}</time></p>
+  <div class="terms">{''.join(articles)}</div>
+  <p class="terms-end">{e(t['footer_tag'])} — ASHIKA Group</p>
+  <a class="link" href="{url(lang, 'join/')}">{e(t['terms_back'])} {icon('arrow')}</a>
+</div></div>"""
+    return page(lang, "join/terms/", t["terms_t"], t["terms_p"], body, "join/", "terms")
+
+
 def not_found(lang):
     t = T[lang]
     title, text, back = t["not_found"]
@@ -439,7 +511,7 @@ def redirect_root():
 <noscript><meta http-equiv="refresh" content="0; url=/ja-jp/"></noscript><a href="/ja-jp/">日本語</a> · <a href="/en-us/">English</a>"""
 
 
-PAGES = [("", home), ("about/", about), ("services/", services), ("vision/", vision), ("history/", history), ("technology/", technology), ("brand/", brand)]
+PAGES = [("", home), ("about/", about), ("services/", services), ("vision/", vision), ("history/", history), ("technology/", technology), ("brand/", brand), ("join/", join), ("join/terms/", join_terms)]
 
 
 def main():
