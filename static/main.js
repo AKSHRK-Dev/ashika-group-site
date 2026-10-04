@@ -40,6 +40,8 @@
     }
   }
 
+  window.AshikaRain = rain; // the game celebrates a new best with it
+
   // ---------------------------------------------------------------------------------------------
   // light / dark, with a circle that grows from the button
   // ---------------------------------------------------------------------------------------------
@@ -452,76 +454,6 @@
     at = k === code[at] ? at + 1 : (k === code[0] ? 1 : 0);
     if (at === code.length) { at = 0; rain(40); toast(S.konami || "Seals everywhere!"); }
   });
-
-  // ---------------------------------------------------------------------------------------------
-  // 404: keep the ball in the air
-  // ---------------------------------------------------------------------------------------------
-  const gc = document.getElementById("game-canvas");
-  if (gc) {
-    const ctx = gc.getContext("2d");
-    const scoreEl = document.getElementById("game-score");
-    const bestEl = document.getElementById("game-best");
-    const startBtn = document.getElementById("game-start");
-    const seal = new Image(); seal.src = "/assets/seal.png";
-    let w = 0, h = 0, ball, running = false, score = 0, best = Number(store.get("ashika-ball-best")) || 0, sealX = 0, raf = 0, last = 0;
-    const showBest = () => { bestEl.textContent = best ? `${S.game_best || "Best"} ${best}` : ""; };
-    const size = () => {
-      const r = gc.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
-      w = r.width; h = r.height; gc.width = w * dpr; gc.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    };
-    const reset = () => { ball = { x: w / 2, y: h * .35, vx: (Math.random() - .5) * .2, vy: -.45, r: Math.max(18, Math.min(w, h) * .065), spin: 0 }; score = 0; scoreEl.textContent = 0; sealX = w / 2; };
-    const draw = () => {
-      ctx.clearRect(0, 0, w, h);
-      const ink = css("--brand-2") || "#1b60a6";
-      // the seal follows the ball along the floor
-      if (seal.complete) { const sw = Math.min(160, w * .3), sh = sw * 339 / 512; ctx.drawImage(seal, sealX - sw * .85, h - sh - 4, sw, sh); }
-      const d = clamp(1 - (h - ball.y) / h, .2, 1);
-      ctx.fillStyle = "rgba(14,26,43,.12)"; ctx.beginPath(); ctx.ellipse(ball.x, h - 8, ball.r * d, ball.r * .25 * d, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.save(); ctx.translate(ball.x, ball.y); ctx.rotate(ball.spin);
-      ctx.fillStyle = ink; ctx.beginPath(); ctx.arc(0, 0, ball.r, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(0, 0, ball.r * .62, -.6, 1.4); ctx.stroke();
-      ctx.restore();
-      ctx.fillStyle = "rgba(255,255,255,.45)"; ctx.beginPath(); ctx.arc(ball.x - ball.r * .35, ball.y - ball.r * .35, ball.r * .22, 0, Math.PI * 2); ctx.fill();
-    };
-    const end = () => {
-      running = false;
-      if (score > best) { best = score; store.set("ashika-ball-best", best); }
-      showBest();
-      startBtn.textContent = S.game_again || "Play again";
-      startBtn.hidden = false;
-      if (score >= 10) rain(Math.min(score, 30));
-    };
-    const tick = (now) => {
-      const dt = Math.min(now - last, 32); last = now;
-      const level = 1 + score * .04;
-      ball.vy += .0011 * dt * level;
-      ball.x += ball.vx * dt; ball.y += ball.vy * dt; ball.spin += ball.vx * dt * .02;
-      if (ball.x < ball.r) { ball.x = ball.r; ball.vx = Math.abs(ball.vx); }
-      if (ball.x > w - ball.r) { ball.x = w - ball.r; ball.vx = -Math.abs(ball.vx); }
-      if (ball.y < ball.r) { ball.y = ball.r; ball.vy = Math.abs(ball.vy) * .5; }
-      sealX += (ball.x - sealX) * .06;
-      draw();
-      if (ball.y > h - ball.r) { ball.y = h - ball.r; draw(); end(); return; }
-      raf = requestAnimationFrame(tick);
-    };
-    const start = () => {
-      size(); reset(); running = true; startBtn.hidden = true; last = performance.now();
-      cancelAnimationFrame(raf); raf = requestAnimationFrame(tick);
-    };
-    gc.addEventListener("pointerdown", (ev) => {
-      if (!running) return;
-      const r = gc.getBoundingClientRect();
-      const x = ev.clientX - r.left, y = ev.clientY - r.top;
-      if (Math.hypot(x - ball.x, y - ball.y) > ball.r * 1.9) return;
-      ball.vy = -(.55 + Math.min(score, 30) * .005);
-      ball.vx = clamp((ball.x - x) / ball.r * .22 + (Math.random() - .5) * .12, -.45, .45);
-      score++; scoreEl.textContent = score;
-    });
-    startBtn.addEventListener("click", start);
-    addEventListener("resize", () => { if (!running) { size(); reset(); draw(); } });
-    showBest(); size(); reset(); seal.onload = draw; draw();
-  }
 
   // a hello for people who open the console
   console.log("%cASHIKA Group%c  情報と世界を駆け巡る / Across information, around the world.\nSource: https://github.com/AKSHRK-Dev/ashika-group-site  (try ↑↑↓↓←→←→BA)",

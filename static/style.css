@@ -522,15 +522,31 @@ html.theme-switch::view-transition-old(root), html.theme-switch::view-transition
 .rain { position: fixed; top: -80px; z-index: 95; pointer-events: none; width: 56px; animation: fall linear forwards; }
 @keyframes fall { to { transform: translateY(calc(100vh + 160px)) rotate(var(--r, 360deg)); } }
 
-/* 404: a small game */
-.game { margin-top: 56px; }
-.game h2 { font-size: 22px; margin-bottom: 6px; }
-.game-box { position: relative; margin-top: 18px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: linear-gradient(180deg, var(--bg-tint), var(--surface)); }
-#game-canvas { display: block; width: 100%; height: 360px; touch-action: manipulation; cursor: pointer; }
-.game-hud { position: absolute; left: 16px; right: 16px; top: 12px; display: flex; justify-content: space-between; font-weight: 700; color: var(--ink-2); font-variant-numeric: tabular-nums; pointer-events: none; }
-#game-score { font-size: 28px; color: var(--brand); }
-.game-start { position: absolute; left: 50%; top: 64%; transform: translate(-50%, -50%); }
-.game-start[hidden] { display: none; }
+/* Seal Ball (game page and 404) */
+.seal-game { position: relative; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: linear-gradient(180deg, var(--bg-tint), var(--surface) 70%); user-select: none; -webkit-user-select: none; }
+.seal-game canvas { display: block; width: 100%; height: 380px; cursor: pointer; outline: none; }
+.seal-game.full canvas { height: clamp(380px, 62vh, 620px); }
+.seal-game.is-playing canvas { touch-action: none; cursor: none; }
+.sg-hud { position: absolute; left: 0; right: 0; top: 0; z-index: 2; display: flex; gap: 6px 18px; flex-wrap: wrap; align-items: center; padding: 10px 16px; font-size: 13px; font-weight: 600; color: var(--muted); pointer-events: none; }
+.sg-hud b { font-size: 20px; color: var(--brand); font-variant-numeric: tabular-nums; margin-left: 4px; }
+.sg-hud .sg-lives { font-size: 14px; letter-spacing: 2px; color: #e5484d; }
+.sg-combo { margin-left: auto; color: #d99a00; font-weight: 800; }
+.sg-combo:empty { display: none; }
+.sg-overlay { position: absolute; inset: 0; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; background: color-mix(in srgb, var(--surface) 72%, transparent); backdrop-filter: blur(3px); animation: rise .35s ease-out; cursor: pointer; }
+.sg-overlay[hidden], .sg-overlay [hidden] { display: none; }
+.sg-overlay h2 { font-size: clamp(24px, 4vw, 34px); margin-bottom: 6px; }
+.sg-overlay p { max-width: 460px; }
+.sg-overlay .actions { justify-content: center; }
+.game-page { padding: 48px 0 88px; }
+.game-title { margin-bottom: 22px; }
+.game-title h1 { font-size: clamp(30px, 4.4vw, 44px); margin-bottom: 8px; }
+.game-help { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; }
+.game-help h2 { font-size: 22px; }
+.game-rules { margin: 0; padding-left: 1.2em; color: var(--ink-2); }
+.game-rules li { margin-bottom: 6px; }
+.lost-game { margin-top: 56px; }
+.lost-game h2 { font-size: 22px; margin-bottom: 6px; }
+@media (max-width: 760px) { .game-help { grid-template-columns: 1fr; gap: 24px; } .seal-game canvas { height: 360px; } .game-page { padding-top: 28px; } }
 
 @media (max-width: 960px) {
   .stage { max-width: 360px; margin-top: 8px; }

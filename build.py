@@ -104,7 +104,9 @@ def page(lang, path, title, desc, body, current="", kind="page"):
     t = T[lang]
     full = f"{title} | ASHIKA Group" if title else f"ASHIKA Group — {t['footer_tag']}"
     alternates = "".join(f'<link rel="alternate" hreflang="{T[l]["lang"]}" href="{SITE}{url(l, path)}">' for l in LANGS)
-    strings = {k: t[k] for k in ("seal_count", "konami", "copied", "game_score", "game_best", "game_start", "game_again")}
+    strings = {k: t[k] for k in ("seal_count", "konami", "copied", "game_t", "game_how", "game_start", "game_again", "game_over", "game_result",
+                                 "game_new_best", "game_paused", "game_resume_hint", "game_resume", "game_combo", "game_share_text")}
+    strings["game_url"] = url(lang, "game/")
     out = f"""<!doctype html>
 <html lang="{t['lang']}" data-lang="{lang}">
 <head>
@@ -131,7 +133,7 @@ def page(lang, path, title, desc, body, current="", kind="page"):
 {footer(lang)}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script type="application/json" id="strings">{json.dumps(strings, ensure_ascii=False)}</script>
-<script src="/assets/main.js?v={BUILD}" defer></script>
+<script src="/assets/main.js?v={BUILD}" defer></script>{f'<script src="/assets/game.js?v={BUILD}" defer></script>' if kind in ("game", "lost") else ""}
 </body>
 </html>"""
     return keep_phrases(out) if lang == "ja-jp" else out
@@ -560,14 +562,41 @@ def support_terms(lang):
                       t["spt_terms"], "supportprogram/", t["spt_back"])
 
 
+def game_box(lang, full=False):
+    """The Seal Ball game (static/game.js reads it by data-game)."""
+    t = T[lang]
+    return f"""<div class="seal-game{' full' if full else ''}" data-game>
+  <div class="sg-hud"><span>{e(t['game_score'])} <b data-score>0</b></span><span class="sg-combo" data-combo aria-live="polite"></span>
+  <span>{e(t['game_best'])} <b data-best>0</b></span><span>{e(t['game_lives'])} <b class="sg-lives" data-lives>●●●</b></span></div>
+  <canvas tabindex="0" aria-label="{e(t['game_t'])}"></canvas>
+  <div class="sg-overlay" data-overlay><p class="kicker">{e('Game')}</p><h2 data-title>{e(t['game_t'])}</h2><p data-text>{e(t['game_how'])}</p>
+  <div class="actions"><button class="btn primary" type="button" data-start>{e(t['game_start'])}</button><a class="btn" data-share target="_blank" rel="noopener" hidden>{e(t['game_share'])}</a></div></div>
+</div>"""
+
+
+def game(lang):
+    t = T[lang]
+    controls = "".join(f"<div><dt>{e(a)}</dt><dd>{e(b)}</dd></div>" for a, b in t["game_controls"])
+    rules = "".join(f"<li>{e(x)}</li>" for x in t["game_rules"])
+    body = f"""
+<section class="game-page"><div class="wrap">
+  <div class="game-title"><p class="kicker rise">Game</p>{run_title([t['game_t']], 'h1', 'run small')}<p class="lead rise">{e(t['game_p'])}</p></div>
+  {game_box(lang, full=True)}
+  <div class="game-help">
+    <div class="rv"><h2>{e(t['game_rules_t'])}</h2><ul class="game-rules">{rules}</ul></div>
+    <dl class="spec rv">{controls}</dl>
+  </div>
+</div></section>"""
+    return page(lang, "game/", t["game_t"], t["game_p"], body, "", "game")
+
+
 def not_found(lang):
     t = T[lang]
     title, text, back = t["not_found"]
     body = f"""<section class="sec lost"><div class="wrap narrow center"><p class="kicker">404</p><h1>{e(title)}</h1><p class="lead">{e(text)}</p>
 <p><a class="btn primary" href="{url(lang)}">{e(back)}</a></p>
-<div class="game" id="game"><h2>{e(t['game_t'])}</h2><p>{e(t['game_p'])}</p>
-<div class="game-box"><canvas id="game-canvas" aria-label="{e(t['game_t'])}"></canvas><div class="game-hud"><span id="game-score">0</span><span id="game-best"></span></div>
-<button class="btn primary game-start" id="game-start" type="button">{e(t['game_start'])}</button></div></div>
+<div class="lost-game"><h2>{e(t['game_t'])}</h2><p>{e(t['game_p'])}</p>{game_box(lang)}
+<p><a class="link" href="{url(lang, 'game/')}">{e(t['game_full'])} {icon('arrow')}</a></p></div>
 </div></section>"""
     return page(lang, "404.html", title, text, body, "", "lost")
 
@@ -587,7 +616,7 @@ def redirect_root():
 <noscript><meta http-equiv="refresh" content="0; url=/ja-jp/"></noscript><a href="/ja-jp/">日本語</a> · <a href="/en-us/">English</a>"""
 
 
-PAGES = [("", home), ("about/", about), ("services/", services), ("vision/", vision), ("history/", history), ("technology/", technology), ("brand/", brand), ("join/", join), ("join/terms/", join_terms), ("supportprogram/", support), ("supportprogram/terms/", support_terms)]
+PAGES = [("", home), ("about/", about), ("services/", services), ("vision/", vision), ("history/", history), ("technology/", technology), ("brand/", brand), ("join/", join), ("join/terms/", join_terms), ("supportprogram/", support), ("supportprogram/terms/", support_terms), ("game/", game)]
 
 
 def main():
