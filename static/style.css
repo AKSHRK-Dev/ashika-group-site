@@ -728,6 +728,21 @@ html { overflow-x: hidden; }
 @media (hover: hover) { .flip:hover .flip-in, .flip:focus-visible .flip-in { transform: rotateY(180deg); } }
 .facts.flips li:first-child .face.back { border-radius: var(--radius) 0 0 var(--radius); }
 .facts.flips li:last-child .face.back { border-radius: 0 var(--radius) var(--radius) 0; }
+/* two by two on tablets and phones: round only the outer corner of each card, and give the words room */
+@media (max-width: 960px) {
+  .facts.flips li .face.back { border-radius: 0; }
+  .facts.flips li:nth-child(1) .face.back { border-top-left-radius: var(--radius); }
+  .facts.flips li:nth-child(2) .face.back { border-top-right-radius: var(--radius); }
+  .facts.flips li:nth-child(3) .face.back { border-bottom-left-radius: var(--radius); }
+  .facts.flips li:nth-child(4) .face.back { border-bottom-right-radius: var(--radius); }
+}
+@media (max-width: 760px) {
+  .facts.flips .flip-in { min-height: 128px; }
+  .flip .face { padding: 18px 16px; }
+  .flip .face.back span { font-size: 14px; line-height: 1.65; letter-spacing: .02em; }
+  .facts b { font-size: 24px; }
+  .facts li > span, .flip .face > span { font-size: 13px; line-height: 1.5; }
+}
 
 /* a seal peeks out of the service screenshots */
 .shot { position: relative; }

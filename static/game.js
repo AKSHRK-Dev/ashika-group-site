@@ -63,9 +63,10 @@
     if (state !== "playing") draw();
   }
 
+  // the nose can reach both walls (the body slides off the left edge), so no ball is out of reach
   function clampX(x) {
-    const sw = sealW();
-    return Math.max(sw * NOSE_X - sw * 0.25, Math.min(w - 12 * scale, x));
+    const r = sealW() * 0.17;
+    return Math.max(r, Math.min(w - 4 * scale, x));
   }
 
   // ---------------------------------------------------------------------------------------------
@@ -151,8 +152,9 @@
       if (b.wait > 0) { b.wait -= dt; b.flash -= dt; b.x = n.x; continue; }
       b.vy += gravity * dt;
       b.x += b.vx * dt; b.y += b.vy * dt; b.spin += b.vx * dt * 0.02;
-      if (b.x < b.r) { b.x = b.r; b.vx = Math.abs(b.vx) * 0.9; }
-      if (b.x > w - b.r) { b.x = w - b.r; b.vx = -Math.abs(b.vx) * 0.9; }
+      // the walls always send the ball back toward the middle, so it never slides down a wall
+      if (b.x < b.r) { b.x = b.r; b.vx = Math.max(Math.abs(b.vx) * 0.9, 120 * scale); }
+      if (b.x > w - b.r) { b.x = w - b.r; b.vx = -Math.max(Math.abs(b.vx) * 0.9, 120 * scale); }
       if (b.y < b.r) { b.y = b.r; b.vy = Math.abs(b.vy) * 0.4; }
 
       // the nose: a generous circle, and only while the ball is coming down

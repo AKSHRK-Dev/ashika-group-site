@@ -358,10 +358,13 @@
   // ===========================================================================================
   // The three words decode themselves, like a signal coming in
   // ===========================================================================================
-  const GLYPHS = "アイウエオカキクケコサシスセソ01#%&*ΣΩλ情報世界駆巡";
+  // English words scramble through Latin letters, Japanese ones through kana and kanji
+  const GLYPHS_JA = "アイウエオカキクケコサシスセソ01#%&*ΣΩλ情報世界駆巡";
+  const GLYPHS_EN = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789#%&*";
   function decode(el) {
     if (reduced || el.dataset.decoding) return;
     const target = el.dataset.text || (el.dataset.text = el.textContent);
+    const GLYPHS = /^[\x00-\x7f]*$/.test(target) ? GLYPHS_EN : GLYPHS_JA;
     el.dataset.decoding = "1";
     const start = performance.now(), dur = 700 + target.length * 60;
     const step = (now) => {
