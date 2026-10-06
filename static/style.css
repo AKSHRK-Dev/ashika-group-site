@@ -777,28 +777,32 @@ html { overflow-x: hidden; }
 .hero-top > .wrap { position: relative; z-index: 1; }
 .hero-sat {
   position: absolute; inset: -72px 0 0 0; z-index: 0; pointer-events: none; overflow: hidden;
-  clip-path: polygon(0 74%, 62% 0, 100% 0, 100% 20%, 50% 100%, 0 100%);
-  -webkit-mask-image: linear-gradient(105deg, transparent 14%, rgba(0, 0, 0, .18) 38%, rgba(0, 0, 0, .85) 64%, #000 80%);
-  mask-image: linear-gradient(105deg, transparent 14%, rgba(0, 0, 0, .18) 38%, rgba(0, 0, 0, .85) 64%, #000 80%);
+  /* the diagonal band with soft edges (a blurred polygon), and fading out toward the text on the left */
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='3.2'/%3E%3C/filter%3E%3Cpolygon points='-10,85.9 70.4,-10 118.75,-10 43.75,110 -10,110' fill='white' filter='url%28%23b%29'/%3E%3C/svg%3E"), linear-gradient(105deg, transparent 10%, rgba(0, 0, 0, .2) 36%, rgba(0, 0, 0, .85) 62%, #000 80%);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='3.2'/%3E%3C/filter%3E%3Cpolygon points='-10,85.9 70.4,-10 118.75,-10 43.75,110 -10,110' fill='white' filter='url%28%23b%29'/%3E%3C/svg%3E"), linear-gradient(105deg, transparent 10%, rgba(0, 0, 0, .2) 36%, rgba(0, 0, 0, .85) 62%, #000 80%);
+  -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+  -webkit-mask-composite: source-in; mask-composite: intersect;
   opacity: 0; animation: sat-in 1.6s cubic-bezier(.2, .7, .2, 1) .3s forwards;
 }
-/* the plane is turned so that "far away" points up and to the right, then laid down */
-.sat-turn { position: absolute; left: 46%; top: 70%; width: 130%; aspect-ratio: 1; translate: -50% -50%; rotate: 58deg; perspective: 700px; perspective-origin: 50% 0%; }
+/* the plane is turned so that "far away" points up and to the right, then laid down.
+   South Osaka (Misaki, the airport) is nearest, the north (Nose, Minoh) is farthest. */
+.sat-turn { position: absolute; left: 63%; top: 44%; width: 50%; aspect-ratio: 1700 / 2115; translate: -50% -50%; rotate: 58deg; perspective: 900px; perspective-origin: 50% 0%; }
 .sat-plane {
-  position: absolute; inset: 0; background-size: 115% auto; background-position: 40% 60%; background-repeat: no-repeat;
-  transform-origin: 50% 100%; transform: rotateX(64deg);
+  position: absolute; inset: 0; background-size: 104% auto; background-position: 50% 50%; background-repeat: no-repeat;
+  transform-origin: 50% 60%; transform: rotateX(52deg);
   /* haze toward the far edge, like looking into the distance */
-  -webkit-mask-image: linear-gradient(to top, #000 45%, rgba(0, 0, 0, .6) 72%, transparent 98%);
-  mask-image: linear-gradient(to top, #000 45%, rgba(0, 0, 0, .6) 72%, transparent 98%);
+  -webkit-mask-image: linear-gradient(to top, #000 55%, rgba(0, 0, 0, .65) 80%, rgba(0, 0, 0, .15) 100%);
+  mask-image: linear-gradient(to top, #000 55%, rgba(0, 0, 0, .65) 80%, rgba(0, 0, 0, .15) 100%);
   animation: sat-fly 90s linear infinite alternate;
 }
 @keyframes sat-in { from { opacity: 0; transform: translateY(24px); } to { opacity: var(--sat-o, 1); transform: none; } }
-@keyframes sat-fly { from { background-position: 40% 62%; } to { background-position: 46% 38%; } }
+@keyframes sat-fly { from { background-position: 49% 56%; } to { background-position: 51% 44%; } }
 .sat-credit { position: absolute; right: 12px; bottom: 4px; z-index: 1; margin: 0; font-size: 10px; color: var(--muted); opacity: .75; }
 :root[data-theme="dark"] .sat-plane { filter: brightness(.7) saturate(.9); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sat-plane { filter: brightness(.7) saturate(.9); } }
 @media (max-width: 960px) {
-  .hero-sat { clip-path: polygon(0 62%, 100% 18%, 100% 52%, 0 100%); -webkit-mask-image: none; mask-image: none; --sat-o: .6; }
+  .hero-sat { -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='3.2'/%3E%3C/filter%3E%3Cpolygon points='-10,66.4 110,13.6 110,47.2 -10,110' fill='white' filter='url%28%23b%29'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='3.2'/%3E%3C/filter%3E%3Cpolygon points='-10,66.4 110,13.6 110,47.2 -10,110' fill='white' filter='url%28%23b%29'/%3E%3C/svg%3E"); --sat-o: .6; }
+  .sat-turn { left: 50%; top: 74%; width: 150%; }
   .sat-credit { font-size: 9px; }
 }
 @media (prefers-reduced-motion: reduce) { .sat-plane { animation: none; } .hero-sat { animation: none; opacity: var(--sat-o, 1); } }
