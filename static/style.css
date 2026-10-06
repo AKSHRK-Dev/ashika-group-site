@@ -624,6 +624,12 @@ html.theme-switch::view-transition-old(root), html.theme-switch::view-transition
 .apply-box { border: 1px solid var(--line); border-radius: var(--radius); padding: 28px 30px; background: linear-gradient(160deg, var(--brand-soft), var(--surface) 55%); }
 .apply-box ul { margin: 0 0 22px; padding-left: 1.2em; color: var(--ink-2); }
 .apply-box li { margin-bottom: 4px; }
+.apply-box ul:has(+ .apply-note) { margin-bottom: 12px; }
+.apply-box .must { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; font-size: .72em; font-weight: 700; line-height: 1.6; vertical-align: .1em; color: var(--brand); background: var(--brand-soft); border: 1px solid color-mix(in srgb, var(--brand) 35%, transparent); }
+.apply-req { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 0 0 14px; padding: 10px 14px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
+.apply-req span { font-size: .8em; font-weight: 700; color: var(--ink-2); }
+.apply-req b { font-size: 1.05em; }
+.apply-note { margin: 0 0 22px; font-size: .85em; color: var(--ink-2); }
 .faqs { display: flex; flex-direction: column; gap: 10px; }
 .faq { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
 .faq summary { cursor: pointer; padding: 16px 20px; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 12px; }

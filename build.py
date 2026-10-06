@@ -484,7 +484,7 @@ def join(lang):
     racks = "".join(f'<span style="--d:{i}"><i></i><i></i></span>' for i in range(JOIN_SERVERS))
     perks = "".join(f'<li class="perk rv" style="--d:{i}">{icon(ic)}<div><h3>{e(a)}</h3><p>{e(b)}</p></div></li>' for i, (ic, a, b) in enumerate(rest))
     steps = "".join(f'<li class="step rv" style="--d:{i}"><span class="step-no">{i + 1}</span><div><h3>{e(a)}</h3><p>{e(b)}</p></div></li>' for i, (a, b) in enumerate(t["steps"]))
-    apply_items = "".join(f"<li>{e(x)}</li>" for x in t["apply_items"])
+    apply_items = "".join(f'<li>{e(x)}{f"""<span class="must">{e(t['apply_must'])}</span>""" if must else ""}</li>' for x, must in t["apply_items"])
     faq = "".join(f'<details class="faq rv"><summary>{e(q)}</summary><p>{e(a)}</p></details>' for q, a in t["join_faq"])
     disclaimer = "".join(f"<li>{e(x)}</li>" for x in t["disclaimer"])
     subject = "お手伝い応募" if lang == "ja-jp" else "Joining ASHIKA Group"
@@ -502,7 +502,7 @@ def join(lang):
 </div></section>
 <section class="sec" id="apply"><div class="wrap split">
   <div><h2 class="rv">{e(t['steps_t'])}</h2><ol class="steps">{steps}</ol></div>
-  <div class="apply-box rv"><h2>{e(t['apply_t'])}</h2><p>{e(t['apply_p'])}</p><ul>{apply_items}</ul>
+  <div class="apply-box rv"><h2>{e(t['apply_t'])}</h2><p class="apply-req"><span>{e(t['apply_req_k'])}</span><b>{e(t['apply_req'])}</b></p><p>{e(t['apply_p'])}</p><ul>{apply_items}</ul><p class="apply-note">{e(t['apply_note'])}</p>
     <div class="actions"><button class="btn primary magnet" type="button" data-mail="support" data-domain="ashikanw.com" data-subject="{e(subject)}">{icon('mail')}{e(t['apply_mail'])}</button>
     <a class="btn" href="https://link.ashikanw.com/discord">{icon('chat')}{e(t['apply_discord'])}</a></div></div>
 </div></section>
