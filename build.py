@@ -292,6 +292,9 @@ def home(lang):
     sign_role, sign_name = t["msg_sign"]
     body = f"""
 <section class="hero">
+  <div class="hero-top">
+  <div class="hero-sat" aria-hidden="true"><div class="sat-turn"><div class="sat-plane" style="background-image:url(/assets/osaka-sat.jpg?v={BUILD})"></div></div></div>
+  <p class="sat-credit">{e(t['sat_credit'])}</p>
   <div class="wrap hero-grid">
     <div class="hero-text">
       <p class="greet rise" data-greet hidden></p>
@@ -307,6 +310,7 @@ def home(lang):
       <p class="poke-count" id="poke-count" aria-live="polite"></p>
       <p class="globe-hint">{e(t['globe_hint'])}</p>
     </div>
+  </div>
   </div>
   <div class="wrap"><ul class="facts flips">{fact_items(t['facts'], t['facts_back'])}</ul></div>
 </section>

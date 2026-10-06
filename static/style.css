@@ -767,3 +767,38 @@ html { overflow-x: hidden; }
 
 @media (max-width: 760px) { .globe-hint { display: none; } .to-top { width: 56px; height: 56px; right: 14px; bottom: 14px; } .to-top img { width: 38px; } }
 @media (prefers-reduced-motion: reduce) { .bubble, .hero::after { display: none; } }
+
+/* ---------------------------------------------------------------------------------------------
+ * Home: an aerial photo of Osaka behind the hero, lying flat and receding toward the top right
+ * (where the Earth is), in a diagonal band. The near end fades out under the text.
+ * Photo: GSI seamless aerial photos (地理院タイル), credited in .sat-credit.
+ * ------------------------------------------------------------------------------------------- */
+.hero-top { position: relative; }
+.hero-top > .wrap { position: relative; z-index: 1; }
+.hero-sat {
+  position: absolute; inset: -72px 0 0 0; z-index: 0; pointer-events: none; overflow: hidden;
+  clip-path: polygon(0 74%, 62% 0, 100% 0, 100% 20%, 50% 100%, 0 100%);
+  -webkit-mask-image: linear-gradient(105deg, transparent 14%, rgba(0, 0, 0, .18) 38%, rgba(0, 0, 0, .85) 64%, #000 80%);
+  mask-image: linear-gradient(105deg, transparent 14%, rgba(0, 0, 0, .18) 38%, rgba(0, 0, 0, .85) 64%, #000 80%);
+  opacity: 0; animation: sat-in 1.6s cubic-bezier(.2, .7, .2, 1) .3s forwards;
+}
+/* the plane is turned so that "far away" points up and to the right, then laid down */
+.sat-turn { position: absolute; left: 46%; top: 70%; width: 130%; aspect-ratio: 1; translate: -50% -50%; rotate: 58deg; perspective: 700px; perspective-origin: 50% 0%; }
+.sat-plane {
+  position: absolute; inset: 0; background-size: 115% auto; background-position: 40% 60%; background-repeat: no-repeat;
+  transform-origin: 50% 100%; transform: rotateX(64deg);
+  /* haze toward the far edge, like looking into the distance */
+  -webkit-mask-image: linear-gradient(to top, #000 45%, rgba(0, 0, 0, .6) 72%, transparent 98%);
+  mask-image: linear-gradient(to top, #000 45%, rgba(0, 0, 0, .6) 72%, transparent 98%);
+  animation: sat-fly 90s linear infinite alternate;
+}
+@keyframes sat-in { from { opacity: 0; transform: translateY(24px); } to { opacity: var(--sat-o, 1); transform: none; } }
+@keyframes sat-fly { from { background-position: 40% 62%; } to { background-position: 46% 38%; } }
+.sat-credit { position: absolute; right: 12px; bottom: 4px; z-index: 1; margin: 0; font-size: 10px; color: var(--muted); opacity: .75; }
+:root[data-theme="dark"] .sat-plane { filter: brightness(.7) saturate(.9); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sat-plane { filter: brightness(.7) saturate(.9); } }
+@media (max-width: 960px) {
+  .hero-sat { clip-path: polygon(0 62%, 100% 18%, 100% 52%, 0 100%); -webkit-mask-image: none; mask-image: none; --sat-o: .6; }
+  .sat-credit { font-size: 9px; }
+}
+@media (prefers-reduced-motion: reduce) { .sat-plane { animation: none; } .hero-sat { animation: none; opacity: var(--sat-o, 1); } }
