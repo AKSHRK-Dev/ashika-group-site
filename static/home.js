@@ -336,26 +336,6 @@
   }
 
   // ===========================================================================================
-  // The ticker runs faster and leans while the page is scrolled quickly
-  // ===========================================================================================
-  const track = document.querySelector(".ticker .track");
-  if (track && !reduced && track.getAnimations) {
-    let lastY = scrollY, speed = 0, ticking = false;
-    const settle = () => {
-      const anim = track.getAnimations()[0];
-      speed *= 0.9;
-      if (anim) anim.playbackRate = 1 + Math.min(Math.abs(speed) * 0.08, 7);
-      track.style.setProperty("--lean", clamp(-speed * 0.25, -12, 12).toFixed(2) + "deg");
-      if (Math.abs(speed) > 0.05) requestAnimationFrame(settle); else { ticking = false; if (anim) anim.playbackRate = 1; track.style.setProperty("--lean", "0deg"); }
-    };
-    addEventListener("scroll", () => {
-      speed = clamp(scrollY - lastY, -120, 120);
-      lastY = scrollY;
-      if (!ticking) { ticking = true; requestAnimationFrame(settle); }
-    }, { passive: true });
-  }
-
-  // ===========================================================================================
   // The three words decode themselves, like a signal coming in
   // ===========================================================================================
   // English words scramble through Latin letters, Japanese ones through kana and kanji
