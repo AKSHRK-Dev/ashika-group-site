@@ -84,7 +84,7 @@ SERVICES = [
         "img": "4lvc.webp",
         "ja": {
             "kind": "短縮 URL",
-            "lead": "長い URL を、ランダムな 8 文字の短い URL に。ログイン不要・無料・期限なしで使える短縮 URL サービスです。",
+            "lead": "長い URL を、ランダムな 5〜8 文字の短い URL に。ログイン不要・無料・期限なしで使える短縮 URL サービスです。",
             "points": [
                 "登録もメールアドレスも不要。URL を貼るだけ",
                 "管理用のリンクで、日ごとのクリック数・来たサイト・国・端末が分かる",
@@ -93,7 +93,7 @@ SERVICES = [
         },
         "en": {
             "kind": "URL shortener",
-            "lead": "Turns long URLs into short ones with 8 random characters. No sign-up, free, and links never expire.",
+            "lead": "Turns long URLs into short ones with 5 to 8 random characters. No sign-up, free, and links never expire.",
             "points": [
                 "No account or email address. Just paste a URL",
                 "A management link shows clicks per day, referring sites, countries and devices",
