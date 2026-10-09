@@ -107,7 +107,7 @@ svg { width: 18px; height: 18px; flex: none; }
 .toc a:hover { border-color: var(--brand-2); color: var(--brand); }
 
 /* service cards */
-.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; } /* four services: two by two */
 .card { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); overflow: hidden; box-shadow: var(--shadow); }
 .card .shot { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; }
 .card-body { padding: 22px 24px 24px; display: flex; flex-direction: column; flex: 1; }
@@ -444,7 +444,8 @@ html.theme-switch::view-transition-old(root), html.theme-switch::view-transition
 .v-no { display: block; font-size: 44px; font-weight: 900; line-height: 1; color: transparent; -webkit-text-stroke: 1px var(--brand-2); margin-bottom: 14px; }
 .value h3 { font-size: 22px; margin-bottom: 8px; }
 .value p { margin: 0; }
-.map { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.map { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+@media (max-width: 1000px) { .map { grid-template-columns: repeat(2, 1fr); } }
 .map-item { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
 .map-item img { aspect-ratio: 16 / 9; object-fit: cover; object-position: top; border-bottom: 1px solid var(--line); transition: transform .6s; }
 .map-item:hover img { transform: scale(1.05); }
