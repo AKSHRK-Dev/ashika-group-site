@@ -254,7 +254,10 @@ HISTORY = [
     ("2026-10-09", "group",
      "4l.vc を公開", "ログイン不要・無料・期限なしの短縮 URL サービス「4l.vc」を公開しました。",
      "4l.vc launched", "4l.vc, a URL shortener with no sign-up, no charge and no expiry, went live.", False),
-    ("2026-10-13", "network",
+    ("2026-10-12", "network",
+     "VPS の受け付けを 11 月 1 日に延期", "10 月 13 日に予定していた VPS の受け付けを、11 月 1 日からに変更しました。お待ちいただいている皆さまには申し訳ございません。",
+     "VPS orders moved to November 1", "VPS orders, planned for October 13, now open on November 1. We are sorry to those who have been waiting.", False),
+    ("2026-11-01", "network",
      "VPS の受け付けを開始", "専有の IPv4 アドレスとルート権限が付いた VPS の受け付けを始めます。",
      "VPS orders open", "Orders open for VPS plans with a dedicated IPv4 address and root access.", True),
 ]
@@ -318,7 +321,7 @@ T["ja-jp"].update({
         ("ashikanw", "サーバー設備", [
             ("設置場所", "大阪府・北摂エリアのデータセンター"),
             ("動かせるもの", "Python、Node.js、Minecraft など。パネルから数クリックで用意できます。"),
-            ("VPS（10 月 13 日から）", "専有の IPv4 アドレスとルート権限付き。最大 64 GB メモリ、10 コア、500 GB SSD。"),
+            ("VPS（11 月 1 日から）", "専有の IPv4 アドレスとルート権限付き。最大 64 GB メモリ、10 コア、500 GB SSD。"),
         ]),
         ("storiamc", "サーバーソフトウェア", [
             ("土台", "Paper から派生したマルチスレッドのサーバー Folia をもとに開発。Java 25、Minecraft 26.2 に対応。"),
@@ -427,7 +430,7 @@ T["en-us"].update({
         ("ashikanw", "Server facilities", [
             ("Location", "A data center in northern Osaka"),
             ("What runs", "Python, Node.js, Minecraft and more, set up in a few clicks in the panel."),
-            ("VPS (from October 13)", "A dedicated IPv4 address and root access. Up to 64 GB of memory, 10 cores and a 500 GB SSD."),
+            ("VPS (from November 1)", "A dedicated IPv4 address and root access. Up to 64 GB of memory, 10 cores and a 500 GB SSD."),
         ]),
         ("storiamc", "Server software", [
             ("Foundation", "Built on Folia, the multithreaded fork of Paper. Java 25, Minecraft 26.2."),
