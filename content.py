@@ -257,9 +257,9 @@ HISTORY = [
     ("2026-10-12", "network",
      "VPS の受け付けを 11 月 1 日に延期", "10 月 13 日に予定していた VPS の受け付けを、11 月 1 日からに変更しました。お待ちいただいている皆さまには申し訳ございません。",
      "VPS orders moved to November 1", "VPS orders, planned for October 13, now open on November 1. We are sorry to those who have been waiting.", False),
-    ("2026-11-01", "network",
-     "VPS の受け付けを開始", "専有の IPv4 アドレスとルート権限が付いた VPS の受け付けを始めます。",
-     "VPS orders open", "Orders open for VPS plans with a dedicated IPv4 address and root access.", True),
+    ("2026-10-23", "network",
+     "VPS の提供を中止", "すべてのお客様に公平に提供することができないため、VPS の提供を中止しました。代わりに、マインクラフトサーバー（Java 版限定）の試験的な提供を予定しています。",
+     "VPS cancelled", "We cancelled the VPS because we could not offer it fairly to every customer. In its place, we plan a trial of Minecraft servers (Java Edition only).", False),
 ]
 
 REPOS = [
@@ -321,7 +321,6 @@ T["ja-jp"].update({
         ("ashikanw", "サーバー設備", [
             ("設置場所", "大阪府・北摂エリアのデータセンター"),
             ("動かせるもの", "Python、Node.js、Minecraft など。パネルから数クリックで用意できます。"),
-            ("VPS（11 月 1 日から）", "専有の IPv4 アドレスとルート権限付き。最大 64 GB メモリ、10 コア、500 GB SSD。"),
         ]),
         ("storiamc", "サーバーソフトウェア", [
             ("土台", "Paper から派生したマルチスレッドのサーバー Folia をもとに開発。Java 25、Minecraft 26.2 に対応。"),
@@ -430,7 +429,6 @@ T["en-us"].update({
         ("ashikanw", "Server facilities", [
             ("Location", "A data center in northern Osaka"),
             ("What runs", "Python, Node.js, Minecraft and more, set up in a few clicks in the panel."),
-            ("VPS (from November 1)", "A dedicated IPv4 address and root access. Up to 64 GB of memory, 10 cores and a 500 GB SSD."),
         ]),
         ("storiamc", "Server software", [
             ("Foundation", "Built on Folia, the multithreaded fork of Paper. Java 25, Minecraft 26.2."),
