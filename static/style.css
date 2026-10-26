@@ -811,3 +811,6 @@ html { overflow-x: hidden; }
   .sat-credit { font-size: 9px; }
 }
 @media (prefers-reduced-motion: reduce) { .sat-plane { animation: none; } .hero-sat { animation: none; opacity: var(--sat-o, 1); } }
+
+/* 代表者の氏名の画像（build.py の NAME_IMAGES）。文字の形を mask にして、まわりの文字色で塗る */
+.name-img { display: inline-block; font-style: normal; height: 1.2em; aspect-ratio: var(--ar); vertical-align: -0.24em; background: currentColor; -webkit-mask: var(--src) center / contain no-repeat; mask: var(--src) center / contain no-repeat; }

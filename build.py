@@ -140,10 +140,27 @@ def page(lang, path, title, desc, body, current="", kind="page"):
     return keep_phrases(out) if lang == "ja-jp" else out
 
 
+# 代表者の氏名は文字で書かず、画像で出す（検索エンジンに拾わせないため。画像の場所は robots.txt で断る）。
+# 画像は文字の形だけ（透明の上に黒）で、CSS の mask で塗るので、明るい配色でも暗い配色でも文字色になる。
+NAME_IMAGES = {
+    "[[NAME_JA_B]]": ("name-ja-b", 275, 77, "代表者の氏名（画像）"),
+    "[[NAME_JA_KANA]]": ("name-ja-kana", 801, 77, "代表者の氏名とよみ（画像）"),
+    "[[NAME_EN_B]]": ("name-en-b", 458, 77, "Representative's name (image)"),
+    "[[NAME_EN]]": ("name-en", 431, 77, "Representative's name (image)"),
+}
+
+
+def name_images(html_text):
+    for token, (file, w, h, label) in NAME_IMAGES.items():
+        tag = f'<i class="name-img" role="img" aria-label="{e(label)}" style="--ar:{w}/{h};--src:url(/assets/{file}.png?v={BUILD})"></i>'
+        html_text = html_text.replace(token, tag)
+    return html_text
+
+
 def write(lang, path, content):
     out = DIST / lang / path / "index.html" if path == "" or path.endswith("/") else DIST / lang / path
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(content, encoding="utf-8")
+    out.write_text(name_images(content), encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------------------------
@@ -650,7 +667,7 @@ def main():
     for lang in LANGS:
         for old, new in (("support/", "supportprogram/"), ("support/terms/", "supportprogram/terms/")):
             write(lang, old, moved(url(lang, new)))
-    (DIST / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {SITE}/sitemap.xml\n", encoding="utf-8")
+    (DIST / "robots.txt").write_text(f"User-agent: *\nAllow: /\nDisallow: /assets/name-\nSitemap: {SITE}/sitemap.xml\n", encoding="utf-8")
     urls = "".join(f"<url><loc>{SITE}{url(l, p)}</loc></url>" for l in LANGS for p, _ in PAGES)
     (DIST / "sitemap.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>', encoding="utf-8")
     print(f"built {sum(1 for _ in DIST.rglob('*.html'))} pages into {DIST}")
