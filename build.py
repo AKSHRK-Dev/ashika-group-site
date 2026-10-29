@@ -77,7 +77,6 @@ def header(lang, path, current):
       <button class="icon-btn menu-btn" id="menu" type="button" aria-label="{e(t['menu'])}" aria-controls="nav" aria-expanded="false">{icon('menu')}</button>
     </div>
   </div>
-  <div class="progress" aria-hidden="true"></div>
 </header>"""
 
 
@@ -86,11 +85,6 @@ def footer(lang):
     services = "".join(f'<li><a href="{s["url"]}">{e(s["name"])}</a></li>' for s in SERVICES)
     group = "".join(f'<li><a href="{url(lang, href)}">{e(label)}</a></li>' for href, label in t["footer_links"])
     return f"""<footer class="site-footer">
-  <div class="sea" aria-hidden="true">
-    <svg class="wave w1" viewBox="0 0 1200 40" preserveAspectRatio="none"><path d="M0 20 Q 75 0 150 20 T 300 20 T 450 20 T 600 20 T 750 20 T 900 20 T 1050 20 T 1200 20 V40 H0z"/></svg>
-    <svg class="wave w2" viewBox="0 0 1200 40" preserveAspectRatio="none"><path d="M0 22 Q 100 6 200 22 T 400 22 T 600 22 T 800 22 T 1000 22 T 1200 22 V40 H0z"/></svg>
-    <img class="swimmer" src="/assets/seal.png?v={BUILD}" alt="" width="80" height="53">
-  </div>
   <div class="wrap foot">
     <div class="foot-brand"><a class="brand" href="{url(lang)}" aria-label="ASHIKA Group"><img src="/assets/mark.png?v={BUILD}" alt="" width="40" height="27"><span>ASHIKA <b>Group</b></span></a><p>{e(t['footer_tag'])}</p></div>
     <div><h2>{e(t['footer_services'])}</h2><ul>{services}</ul></div>
@@ -134,7 +128,7 @@ def page(lang, path, title, desc, body, current="", kind="page"):
 {footer(lang)}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script type="application/json" id="strings">{json.dumps(strings, ensure_ascii=False)}</script>
-<script src="/assets/main.js?v={BUILD}" defer></script>{f'<script src="/assets/game.js?v={BUILD}" defer></script>' if kind in ("game", "lost") else ""}{f'<script src="/assets/home.js?v={BUILD}" defer></script>' if kind == "home" else ""}
+<script src="/assets/main.js?v={BUILD}" defer></script>{f'<script src="/assets/game.js?v={BUILD}" defer></script>' if kind in ("game", "lost") else ""}
 </body>
 </html>"""
     return keep_phrases(out) if lang == "ja-jp" else out
@@ -189,17 +183,12 @@ def chars(text, start=0):
 
 
 def run_title(lines, tag="h1", cls="run"):
-    spans, n = [], 0
-    for line in lines:
-        spans.append(f'<span class="line" aria-hidden="true">{chars(line, n)}</span>')
-        n += len(line)
-    cjk = any(ord(c) > 0x2e80 for c in "".join(lines))
-    label = "".join(lines) if cjk else " ".join(lines)
-    return f'<{tag} class="{cls}" aria-label="{e(label)}">{"".join(spans)}</{tag}>'
+    spans = "".join(f'<span class="line">{e(line)}</span>' for line in lines)
+    return f'<{tag} class="{cls}">{spans}</{tag}>'
 
 
 def shot(s, lang, eager=False, peek=False):
-    seal = f'<img class="peek" src="/assets/seal.png?v={BUILD}" alt="" width="90" height="60" aria-hidden="true">' if peek else ""
+    seal = ""
     return f"""<figure class="shot"><div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span>{e(s['host'])}</span></div>
 <img src="/assets/{s['img']}?v={BUILD}" width="1200" height="750" alt="{e(s['name'])}{' のトップページ' if lang == 'ja-jp' else ' home page'}"{'' if eager else ' loading="lazy"'}>{seal}</figure>"""
 
@@ -219,8 +208,7 @@ def page_art(name):
 
 
 def page_head(kicker, title, lead, extra="", art="globe"):
-    return f"""<section class="page-head"><div class="flow" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-<div class="wrap"><div class="sec-head"><p class="kicker">{e(kicker)}</p>{run_title([title], 'h1', 'run small')}<p class="lead rise">{e(lead)}</p></div>{extra}{page_art(art)}</div></section>"""
+    return f"""<section class="page-head"><div class="wrap"><div class="sec-head"><p class="kicker">{e(kicker)}</p>{run_title([title], 'h1', 'run small')}<p class="lead">{e(lead)}</p></div>{extra}</div></section>"""
 
 
 def profile_table(t):
@@ -249,7 +237,7 @@ def contact(lang, t):
     return f"""<div class="contact rv">
   <p>{e(t['contact_p'])}</p>
   <ul class="contact-list">{rows}</ul>
-  <button class="btn primary magnet" type="button" data-mail="support" data-domain="ashikanw.com">{icon('mail')}{e(t['contact_mail'])}</button>
+  <button class="btn primary" type="button" data-mail="support" data-domain="ashikanw.com">{icon('mail')}{e(t['contact_mail'])}</button>
 </div>"""
 
 
@@ -299,40 +287,39 @@ def timeline(lang, entries):
 # ---------------------------------------------------------------------------------------------
 def home(lang):
     t = T[lang]
-    cards = "".join(f"""<article class="card rv tilt" style="--d:{i}">
-  {shot(s, lang, peek=True)}
+    ja = lang == "ja-jp"
+    cards = "".join(f"""<article class="card rv">
+  {shot(s, lang)}
   <div class="card-body"><p class="kind">{e(s[lang[:2]]['kind'])}</p><h3>{e(s['name'])}</h3><p>{e(s[lang[:2]]['lead'])}</p>
   <div class="links"><a class="link" href="{url(lang, 'services/')}#{s['key']}">{e(t['more'])} {icon('arrow')}</a><a class="link quiet" href="{s['url']}">{e(t['visit'])} {icon('ext')}</a></div></div>
-</article>""" for i, s in enumerate(SERVICES))
-    words = "".join(f'<li class="word rv" style="--d:{i}"><b>{e(w)}</b><small>{e(sub)}</small></li>' for i, (w, sub, _) in enumerate(t["words"]))
-    recent = [h for h in HISTORY if not h[6]][-3:][::-1]
+</article>""" for s in SERVICES)
+    words = "".join(f'<li class="word rv"><b>{e(w)}</b><small>{e(sub)}</small></li>' for w, sub, _ in t["words"])
+    # いちばん新しいできごと（予定は除く）を、ニュースの一覧のように並べる
+    recent = [h for h in HISTORY if not h[6]][-4:][::-1]
+    news = "".join(f"""<li><a href="{url(lang, 'history/')}"><time datetime="{iso}">{e(date_label(lang, iso))}</time><span class="chip {cat}">{e(t['cat'][cat])}</span><span class="news-t">{e(jt if ja else et)}</span>{icon('arrow')}</a></li>"""
+                   for iso, cat, jt, jx, et, ex, _ in recent)
+    facts = "".join(f"<li><b>{e(v)}</b><span>{e(k)}</span></li>" for v, k in t["facts"])
+    tiles = "".join(f"""<a class="tile rv" href="{url(lang, href)}"><span class="tile-ic">{icon(ic)}</span><span class="tile-t">{e(label)}</span>{icon('arrow')}</a>"""
+                    for href, label, ic in [("about/", t["profile_t"], "doc"), ("vision/", t["vision_t"], "spark"), ("history/", "沿革" if ja else "History", "clock"), ("technology/", "技術・設備" if ja else "Technology", "server")])
     sign_role, sign_name = t["msg_sign"]
     body = f"""
-<section class="hero">
-  <div class="hero-top">
-  <div class="hero-sat" aria-hidden="true"><div class="sat-turn"><div class="sat-plane" style="background-image:url(/assets/osaka-sat.jpg?v={BUILD})"></div></div></div>
+<section class="hero2" style="--hero:url(/assets/hero-osaka.webp?v={BUILD})">
+  <div class="wrap">
+    <p class="kicker">{e(t['hero_k'])}</p>
+    {run_title(t['hero_t'])}
+    <p class="lead">{e(t['hero_p'])}</p>
+    <div class="actions"><a class="btn primary" href="{url(lang, t['hero_cta'][1])}">{e(t['hero_cta'][0])} {icon('arrow')}</a><a class="btn on-dark" href="{url(lang, t['hero_cta2'][1])}">{e(t['hero_cta2'][0])}</a></div>
+  </div>
   <p class="sat-credit">{e(t['sat_credit'])}</p>
-  <div class="wrap hero-grid">
-    <div class="hero-text">
-      <p class="greet rise" data-greet hidden></p>
-      <p class="kicker rise">{e(t['hero_k'])}</p>
-      {run_title(t['hero_t'])}
-      <p class="lead rise" style="--d:2">{e(t['hero_p'])}</p>
-      <div class="actions rise" style="--d:3"><a class="btn primary magnet" href="{url(lang, t['hero_cta'][1])}">{e(t['hero_cta'][0])} {icon('arrow')}</a><a class="btn" href="{url(lang, t['hero_cta2'][1])}">{e(t['hero_cta2'][0])}</a></div>
-    </div>
-    <div class="stage" id="stage">
-      <canvas class="globe" id="globe" aria-hidden="true"></canvas>
-      <img class="seal" src="/assets/seal.png?v={BUILD}" alt="" width="512" height="339">
-      <button class="poke" id="poke" type="button" aria-label="{e(t['seal_hint'])}" title="{e(t['seal_hint'])}"></button>
-      <p class="poke-count" id="poke-count" aria-live="polite"></p>
-      <p class="globe-hint">{e(t['globe_hint'])}</p>
-    </div>
-  </div>
-  </div>
-  <div class="wrap"><ul class="facts flips">{fact_items(t['facts'], t['facts_back'])}</ul></div>
 </section>
-{ticker(lang)}
-<section class="sec" id="services">
+<div class="wrap"><ul class="facts plain">{facts}</ul></div>
+<section class="sec" id="news">
+  <div class="wrap">
+    <div class="head-row">{section_head(t['hist_k'], t['hist_home_t'])}<a class="link" href="{url(lang, 'history/')}">{e(t['hist_all'])} {icon('arrow')}</a></div>
+    <ul class="news">{news}</ul>
+  </div>
+</section>
+<section class="sec tint" id="services">
   <div class="wrap">{section_head(t['biz_k'], t['biz_t'], t['biz_p'])}<div class="cards">{cards}</div></div>
 </section>
 <section class="sec vision-teaser">
@@ -350,33 +337,16 @@ def home(lang):
   </div>
 </section>
 <section class="sec">
-  <div class="wrap split">
-    <div>{section_head(t['hist_k'], t['hist_home_t'])}<a class="link rv" href="{url(lang, 'history/')}">{e(t['hist_all'])} {icon('arrow')}</a></div>
-    {timeline(lang, recent)}
-  </div>
-</section>
-<section class="sec sp-teaser">
-  <div class="wrap sp-teaser-in rv">
-    <div><p class="kicker">{e(t['sp_k'])}</p><h2>{e(t['sp_home_t'])}</h2><p class="lead">{e(t['sp_home_p'])}</p>
-    <a class="btn primary magnet" href="{url(lang, 'supportprogram/')}">{e(t['sp_t'])} {icon('arrow')}</a></div>
-    <div class="sp-nums" aria-hidden="true">{''.join(f'<div><b class="num" data-to="{n}">{n}</b><span>{e(name)}</span></div>' for _, name, _, n, *_ in t['sp_programs'])}</div>
-  </div>
-</section>
-<section class="sec join-teaser">
-  <div class="wrap join-teaser-in rv">
-    <div><p class="kicker">{e(t['join_k'])} <span class="open-pill"><i></i>{e(t['join_open'])}</span></p><h2>{e(t['join_home_t'])}</h2><p class="lead">{e(t['join_home_p'])}</p>
-    <a class="btn primary magnet" href="{url(lang, 'join/')}">{e(t['join_t'])} {icon('arrow')}</a></div>
-    <div class="racks" aria-hidden="true">{''.join(f'<span style="--d:{i}"><i></i><i></i></span>' for i in range(JOIN_SERVERS))}</div>
+  <div class="wrap two-up">
+    <div class="panel rv"><p class="kicker">{e(t['sp_k'])}</p><h2>{e(t['sp_home_t'])}</h2><p class="lead">{e(t['sp_home_p'])}</p>
+    <a class="btn primary" href="{url(lang, 'supportprogram/')}">{e(t['sp_t'])} {icon('arrow')}</a></div>
+    <div class="panel rv"><p class="kicker">{e(t['join_k'])} <span class="open-pill"><i></i>{e(t['join_open'])}</span></p><h2>{e(t['join_home_t'])}</h2><p class="lead">{e(t['join_home_p'])}</p>
+    <a class="btn primary" href="{url(lang, 'join/')}">{e(t['join_t'])} {icon('arrow')}</a></div>
   </div>
 </section>
 <section class="sec tint">
-  <div class="wrap split">
-    <div>{section_head(t['co_k'], t['profile_t'])}<a class="link rv" href="{url(lang, 'about/')}">{e(t['co_t'])} {icon('arrow')}</a></div>
-    {profile_table(t)}
-  </div>
+  <div class="wrap">{section_head(t['co_k'], t['co_t'])}<div class="tiles">{tiles}</div></div>
 </section>"""
-    body += f"""
-<button class="to-top" type="button" aria-label="{e(t['top_label'])}" title="{e(t['top_label'])}"><span class="ball"></span><img src="/assets/seal.png?v={BUILD}" alt="" width="56" height="37"></button>"""
     return page(lang, "", "", t["desc"], body, "", "home")
 
 
@@ -407,8 +377,8 @@ def services(lang):
         points = "".join(f'<li class="rv" style="--d:{j}">{icon("check")}<span>{e(p)}</span></li>' for j, p in enumerate(c["points"]))
         rows.append(f"""<section class="biz{' flip' if i % 2 else ''}" id="{s['key']}">
   <div class="biz-text"><p class="kind rv">{e(c['kind'])}</p><h2 class="rv">{e(s['name'])}</h2><p class="lead rv">{e(c['lead'])}</p><ul class="points">{points}</ul>
-  <a class="btn primary magnet rv" href="{s['url']}">{e(t['visit'])} {icon('ext')}</a></div>
-  <div class="rv slide tilt">{shot(s, lang, eager=i == 0)}</div>
+  <a class="btn primary rv" href="{s['url']}">{e(t['visit'])} {icon('ext')}</a></div>
+  <div class="rv slide">{shot(s, lang, eager=i == 0)}</div>
 </section>""")
     body = f"""
 {page_head(t['biz_k'], t['biz_t'], t['biz_page_p'], art='server')}
@@ -422,11 +392,11 @@ def vision(lang):
   <p class="kicker rv">{e(t['words_t'])}</p>
   <div class="mf-words">{''.join(f'<div class="mf rv" style="--d:{i}"><p class="mf-sub">{e(sub)}</p><h2>{e(w)}</h2><p>{e(txt)}</p></div>' for i, (w, sub, txt) in enumerate(t['words']))}</div>
 </div></section>"""
-    values = "".join(f"""<li class="value rv tilt" style="--d:{i}"><span class="v-no">{i + 1:02d}</span><h3>{e(name)}</h3><p>{e(txt)}</p></li>""" for i, (name, txt) in enumerate(t["values"]))
+    values = "".join(f"""<li class="value rv" style="--d:{i}"><span class="v-no">{i + 1:02d}</span><h3>{e(name)}</h3><p>{e(txt)}</p></li>""" for i, (name, txt) in enumerate(t["values"]))
     mapping = "".join(f"""<li class="map-item rv" style="--d:{i}"><img src="/assets/{s['img']}?v={BUILD}" alt="" width="1200" height="750" loading="lazy"><div><p class="kind">{e(s['name'])}</p><h3>{e(t['map'][s['key']][0])}</h3><p>{e(t['map'][s['key']][1])}</p></div></li>""" for i, s in enumerate(SERVICES))
     body = f"""
 {page_head(t['vision_k'], t['vision_t'], t['vision_p'], art='spark')}
-<section class="slogan" aria-label="{e(t['footer_tag'])}"><div class="wrap">{run_title(t['hero_t'], 'p', 'run huge')}</div><canvas class="streams" id="streams" aria-hidden="true"></canvas></section>
+<section class="slogan" aria-label="{e(t['footer_tag'])}"><div class="wrap">{run_title(t['hero_t'], 'p', 'run huge')}</div></section>
 {big}
 <section class="sec tint"><div class="wrap"><h2 class="rv">{e(t['values_t'])}</h2><ol class="values">{values}</ol></div></section>
 <section class="sec"><div class="wrap"><h2 class="rv">{e(t['map_t'])}</h2><ol class="map">{mapping}</ol></div></section>"""
@@ -456,7 +426,7 @@ def technology(lang):
         dl = "".join(f'<div class="rv" style="--d:{i}"><dt>{e(k)}</dt><dd>{e(v)}</dd></div>' for i, (k, v) in enumerate(rows))
         blocks.append(f"""<article class="tech-block" id="{key}"><header class="rv"><p class="kind">{e(kind)}</p><h2>{e(s['name'])}</h2><a class="link quiet" href="{s['url']}">{e(s['host'])} {icon('ext')}</a></header><dl class="spec">{dl}</dl></article>""")
     web = "".join(f'<div class="rv"><dt>{e(k)}</dt><dd>{e(v)}</dd></div>' for k, v in t["web"])
-    repos = "".join(f"""<li class="repo rv tilt" style="--d:{i}"><a href="https://github.com/{path}">{icon('github')}<span><b>{e(name)}</b><small>{e(ja if lang == 'ja-jp' else en)}</small></span>{icon('ext')}</a></li>""" for i, (name, path, ja, en) in enumerate(REPOS))
+    repos = "".join(f"""<li class="repo rv" style="--d:{i}"><a href="https://github.com/{path}">{icon('github')}<span><b>{e(name)}</b><small>{e(ja if lang == 'ja-jp' else en)}</small></span>{icon('ext')}</a></li>""" for i, (name, path, ja, en) in enumerate(REPOS))
     body = f"""
 {page_head(t['tech_k'], t['tech_t'], t['tech_p'], art='code')}
 <section class="sec"><div class="wrap"><ul class="facts stats">{stats}</ul>
@@ -491,7 +461,7 @@ def join(lang):
     roles = []
     for i, (key, name, sub, lead, tasks, want) in enumerate(t["roles"]):
         items = "".join(f"<li>{icon('check')}<span>{e(x)}</span></li>" for x in tasks)
-        roles.append(f"""<article class="role-card rv tilt" id="{key}" style="--d:{i}">
+        roles.append(f"""<article class="role-card rv" id="{key}" style="--d:{i}">
   <div class="role-icon">{icon('code' if key == 'engineer' else 'chat')}</div>
   <p class="kind">{e(sub)}</p><h3>{e(name)}</h3><p>{e(lead)}</p>
   <ul class="points">{items}</ul>
@@ -520,7 +490,7 @@ def join(lang):
 <section class="sec" id="apply"><div class="wrap split">
   <div><h2 class="rv">{e(t['steps_t'])}</h2><ol class="steps">{steps}</ol></div>
   <div class="apply-box rv"><h2>{e(t['apply_t'])}</h2><p class="apply-req"><span>{e(t['apply_req_k'])}</span><b>{e(t['apply_req'])}</b></p><p>{e(t['apply_p'])}</p><ul>{apply_items}</ul><p class="apply-note">{e(t['apply_note'])}</p>
-    <div class="actions"><button class="btn primary magnet" type="button" data-mail="support" data-domain="ashikanw.com" data-subject="{e(subject)}">{icon('mail')}{e(t['apply_mail'])}</button>
+    <div class="actions"><button class="btn primary" type="button" data-mail="support" data-domain="ashikanw.com" data-subject="{e(subject)}">{icon('mail')}{e(t['apply_mail'])}</button>
     <a class="btn" href="https://link.ashikanw.com/discord">{icon('chat')}{e(t['apply_discord'])}</a></div></div>
 </div></section>
 <section class="sec tint"><div class="wrap narrow"><h2 class="rv">{e(t['join_faq_t'])}</h2><div class="faqs">{faq}</div></div></section>
@@ -563,7 +533,7 @@ def support(lang):
         who_items = "".join(f"<li>{icon('check')}<span>{e(x)}</span></li>" for x in who)
         need_items = "".join(f"<li>{e(x)}</li>" for x in need)
         note = f'<p class="sp-note">{e(t["sp_hardship_note"])}</p>' if key == "personal" else ""
-        cards.append(f"""<article class="program rv tilt {key}" id="{key}" style="--d:{i}">
+        cards.append(f"""<article class="program rv {key}" id="{key}" style="--d:{i}">
   <div class="program-top"><b><span class="num" data-to="{count}">{count}</span></b><span>{e(t['sp_unit'])}</span></div>
   <p class="kind">{e(sub)}</p><h3>{e(name)}</h3><p>{e(lead)} {e(t['sp_more'])}</p>
   <h4>{e(t['sp_who'])}</h4><ul class="points">{who_items}</ul>
@@ -579,7 +549,7 @@ def support(lang):
 <section class="sec tint" id="apply"><div class="wrap split">
   <div><h2 class="rv">{e(t['sp_steps_t'])}</h2><ol class="steps">{steps}</ol></div>
   <div class="apply-box rv"><h2>{e(t['sp_steps'][0][0])}</h2><p>{e(t['sp_steps'][0][1])}</p>
-    <div class="actions"><button class="btn primary magnet" type="button" data-mail="support" data-domain="ashikanw.com" data-subject="{e(subject)}">{icon('mail')}{e(t['sp_apply_mail'])}</button>
+    <div class="actions"><button class="btn primary" type="button" data-mail="support" data-domain="ashikanw.com" data-subject="{e(subject)}">{icon('mail')}{e(t['sp_apply_mail'])}</button>
     <a class="btn" href="https://link.ashikanw.com/discord">{icon('chat')}{e(t['sp_apply_discord'])}</a></div></div>
 </div></section>
 <section class="sec"><div class="wrap narrow"><h2 class="rv">{e(t['sp_faq_t'])}</h2><div class="faqs">{faq}</div></div></section>

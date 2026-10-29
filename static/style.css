@@ -814,3 +814,75 @@ html { overflow-x: hidden; }
 
 /* 代表者の氏名の画像（build.py の NAME_IMAGES）。文字の形を mask にして、まわりの文字色で塗る */
 .name-img { display: inline-block; font-style: normal; height: 1.2em; aspect-ratio: var(--ar); vertical-align: -0.24em; background: currentColor; -webkit-mask: var(--src) center / contain no-repeat; mask: var(--src) center / contain no-repeat; }
+
+/* =============================================================================================
+   Calm (2026-10-29). The site used to move a lot; this block takes most of it out.
+   Things only fade in once, nothing follows the pointer or the scroll, and nothing loops.
+   Corporate sites such as SoftBank Group and XServer Group were the reference: a photo hero,
+   a news list near the top, plain sections, and link tiles to the group's own pages.
+   ============================================================================================= */
+.site-header { backdrop-filter: none; background: var(--bg); }
+.site-header.scrolled { box-shadow: 0 1px 0 var(--line); }
+.js .rv, .js .rv[data-anim] { opacity: 0; transform: translateY(14px); filter: none; clip-path: none; transition: opacity .5s ease, transform .5s ease; }
+.js .rv.in, .js .rv[data-anim].in { opacity: 1; transform: none; }
+.rise, .run .ch, .page-head .kicker::before, .hero .kicker::before, .open-pill i, .tl-item.is-future .tl-dot, .in .racks i:first-child, .faq[open] p { animation: none !important; }
+.js .rv:not(.in) .kicker::before, .js .rv.kicker:not(.in)::before { transform: none; }
+.btn.primary::after { display: none; }
+.btn, .btn svg, .link svg, .card .shot img { transition: background .15s, border-color .15s, color .15s; }
+.btn:hover svg, .link:hover svg { transform: none; }
+.btn.primary:hover { box-shadow: none; }
+.page-head { padding: 56px 0 36px; }
+.page-head .run.small, .run.small { font-size: clamp(30px, 4vw, 42px); font-weight: 800; margin: 0 0 12px; }
+.run .line { display: block; }
+.timeline .tl-fill { transform: none !important; height: 100% !important; }
+
+/* hero: one photo, a dark layer for contrast, and the words */
+.hero2 { position: relative; color: #fff; background: #0b2440 var(--hero) center / cover no-repeat; isolation: isolate; }
+.hero2::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(8, 27, 50, .92) 0%, rgba(8, 27, 50, .78) 45%, rgba(8, 27, 50, .35) 100%); }
+.hero2 .wrap { padding-top: clamp(72px, 12vw, 140px); padding-bottom: clamp(72px, 11vw, 128px); }
+.hero2 .kicker { color: #9cc4f0; }
+.hero2 .run { font-size: clamp(38px, 6.4vw, 72px); font-weight: 900; line-height: 1.2; letter-spacing: .02em; margin: 0 0 22px; color: #fff; }
+.hero2 .run .line:last-child { color: #fff; }
+.hero2 .lead { color: rgba(255, 255, 255, .86); font-size: clamp(15px, 1.6vw, 18px); max-width: 600px; margin-bottom: 30px; }
+.hero2 .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.hero2 .btn.primary { background: #fff; border-color: #fff; color: #0e2a4a; }
+.hero2 .btn.primary:hover { background: #e8f0f9; border-color: #e8f0f9; }
+.btn.on-dark { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .55); }
+.btn.on-dark:hover { border-color: #fff; background: rgba(255, 255, 255, .08); }
+.hero2 .sat-credit { position: absolute; right: 12px; bottom: 8px; margin: 0; font-size: 11px; color: rgba(255, 255, 255, .6); }
+.facts.plain { margin-top: -36px; position: relative; box-shadow: var(--shadow); }
+.facts.plain b { font-size: 26px; }
+
+/* news list near the top */
+.head-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 24px; margin-bottom: 20px; }
+.head-row .sec-head { margin-bottom: 0; }
+.news { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.news li { border-bottom: 1px solid var(--line); }
+.news a { display: grid; grid-template-columns: 8.5em auto 1fr 18px; align-items: center; gap: 6px 18px; padding: 18px 4px; text-decoration: none; color: var(--ink); }
+.news a:hover .news-t { color: var(--brand); text-decoration: underline; text-underline-offset: 4px; }
+.news time { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.news .chip { justify-self: start; white-space: nowrap; }
+.news svg { width: 16px; height: 16px; color: var(--muted); }
+@media (max-width: 640px) {
+  .news a { grid-template-columns: auto 1fr; }
+  .news .news-t { grid-column: 1 / -1; }
+  .news a > svg { display: none; }
+}
+
+/* support program and join, side by side */
+.two-up { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.panel { padding: 36px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.panel h2 { font-size: clamp(22px, 2.4vw, 26px); }
+.panel .lead { font-size: 15px; margin-bottom: 24px; }
+@media (max-width: 860px) { .two-up { grid-template-columns: 1fr; } .panel { padding: 26px; } }
+
+/* about tiles */
+.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.tile { display: flex; align-items: center; gap: 14px; padding: 26px 22px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); text-decoration: none; color: var(--ink); font-weight: 700; transition: border-color .15s; }
+.tile:hover { border-color: var(--brand-2); }
+.tile-ic { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; background: var(--brand-soft); color: var(--brand); flex: none; }
+.tile-ic svg { width: 20px; height: 20px; }
+.tile-t { flex: 1; }
+.tile > svg { width: 16px; height: 16px; color: var(--muted); }
+@media (max-width: 900px) { .tiles { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 520px) { .tiles { grid-template-columns: 1fr; } }
