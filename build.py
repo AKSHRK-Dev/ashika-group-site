@@ -48,7 +48,7 @@ def icon(name):
         "doc": '<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 15.5h6M9 9h2"/>',
         "spark": '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>',
     }
-    return f'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{paths[name]}</svg>'
+    return f'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{paths[name]}</svg>'
 
 
 def keep_phrases(page):
@@ -59,49 +59,81 @@ def keep_phrases(page):
 
 
 # ---------------------------------------------------------------------------------------------
+# 2026-11 の作り直しで足した短い文言。長い説明は出さない方針（説明は分かりにくいところだけ）。
+# ---------------------------------------------------------------------------------------------
+V2 = {
+    "ja-jp": {
+        "about_k": "About", "about_t": "ASHIKA Group とは",
+        "news_k": "News",
+        "sp_line": f"非営利団体 {SUPPORT_NONPROFIT_SERVERS} 台・個人 {SUPPORT_PERSONAL_SERVERS} 台まで無料",
+        "join_line": f"参加中はサーバー {JOIN_SERVERS} 台まで無料",
+        "notes_t": "出典", "type_p": "欧文は Atkinson Hyperlegible Next、和文は BIZ UDPGothic を使っています。",
+        "shot_alt": " のトップページ", "server_alt": "サーバーの内部。CPU のヒートシンク、メモリスロット、冷却ファン",
+    },
+    "en-us": {
+        "about_k": "About", "about_t": "What is ASHIKA Group?",
+        "news_k": "News",
+        "sp_line": f"Free: up to {SUPPORT_NONPROFIT_SERVERS} servers for nonprofits, {SUPPORT_PERSONAL_SERVERS} for individuals",
+        "join_line": f"Up to {JOIN_SERVERS} free servers while you take part",
+        "notes_t": "Sources", "type_p": "Atkinson Hyperlegible Next for Latin text, BIZ UDPGothic for Japanese.",
+        "shot_alt": " home page", "server_alt": "Inside a server: CPU heatsinks, memory slots and cooling fans",
+    },
+}
+
+
+# ---------------------------------------------------------------------------------------------
 # Page shell
 # ---------------------------------------------------------------------------------------------
+def brand_link(lang):
+    return f'<a class="brand" href="{url(lang)}" aria-label="ASHIKA Group"><img src="/assets/mark.png?v={BUILD}" alt="" width="40" height="27"><span>ASHIKA <b>Group</b></span></a>'
+
+
 def header(lang, path, current):
     t = T[lang]
-    nav = "".join(
-        f'<a href="{url(lang, href)}"{" aria-current=page" if current and href.startswith(current) and "#" not in href else ""}>{e(label)}</a>'
+    links = "".join(
+        f'<a href="{url(lang, href)}"{" aria-current=page" if current and href.startswith(current) else ""}>{e(label)}</a>'
         for href, label in t["nav"])
     other = [l for l in LANGS if l != lang][0]
+    lang_link = f'<a class="lang" href="{url(other, path)}" hreflang="{T[other]["lang"]}" lang="{T[other]["lang"]}" data-set-lang="{other}">{icon("globe")}<span>{e(T[other]["name"])}</span></a>'
+    # スマホのメニューは <details>（JS なしで開閉できる）
     return f"""<header class="site-header" id="top">
   <div class="wrap bar">
-    <a class="brand" href="{url(lang)}" aria-label="ASHIKA Group"><img src="/assets/mark.png?v={BUILD}" alt="" width="40" height="27"><span>ASHIKA <b>Group</b></span></a>
-    <nav class="nav" id="nav" aria-label="{e(t['menu'])}">{nav}</nav>
-    <div class="tools">
-      <a class="lang" href="{url(other, path)}" hreflang="{T[other]['lang']}" lang="{T[other]['lang']}" data-set-lang="{other}">{icon('globe')}<span>{e(T[other]['name'])}</span></a>
-      <button class="icon-btn" id="theme" type="button" aria-label="{e(t['theme'])}" title="{e(t['theme'])}">{icon('sun')}</button>
-      <button class="icon-btn menu-btn" id="menu" type="button" aria-label="{e(t['menu'])}" aria-controls="nav" aria-expanded="false">{icon('menu')}</button>
-    </div>
+    {brand_link(lang)}
+    <nav class="nav" aria-label="{e(t['menu'])}">{links}</nav>
+    {lang_link}
+    <details class="menu"><summary>{icon('menu')}<span>{e(t['menu'])}</span></summary><nav aria-label="{e(t['menu'])}">{links}</nav></details>
   </div>
 </header>"""
 
 
-def footer(lang):
+def footer(lang, notes=()):
     t = T[lang]
-    services = "".join(f'<li><a href="{s["url"]}">{e(s["name"])}</a></li>' for s in SERVICES)
-    group = "".join(f'<li><a href="{url(lang, href)}">{e(label)}</a></li>' for href, label in t["footer_links"])
-    return f"""<footer class="site-footer">
+    services = "".join(f'<a href="{s["url"]}">{e(s["name"])}</a>' for s in SERVICES)
+    group = "".join(f'<a href="{url(lang, href)}">{e(label)}</a>' for href, label in t["footer_links"])
+    notes_html = ""
+    if notes:
+        items = "".join(f"<p>{e(n)}</p>" for n in notes)
+        notes_html = f'<section class="notes" aria-label="{e(V2[lang]["notes_t"])}"><div class="wrap"><h2>{e(V2[lang]["notes_t"])}</h2>{items}</div></section>'
+    return f"""{notes_html}<footer class="site-footer">
   <div class="wrap foot">
-    <div class="foot-brand"><a class="brand" href="{url(lang)}" aria-label="ASHIKA Group"><img src="/assets/mark.png?v={BUILD}" alt="" width="40" height="27"><span>ASHIKA <b>Group</b></span></a><p>{e(t['footer_tag'])}</p></div>
-    <div><h2>{e(t['footer_services'])}</h2><ul>{services}</ul></div>
-    <div><h2>{e(t['footer_group'])}</h2><ul>{group}</ul></div>
+    <div class="foot-brand">{brand_link(lang)}<p>{e(t['footer_tag'])}</p></div>
+    <div class="foot-links">
+      <div><h2>{e(t['footer_services'])}</h2><p>{services}</p></div>
+      <div><h2>{e(t['footer_group'])}</h2><p>{group}</p></div>
+    </div>
   </div>
-  <div class="wrap copy"><span>{e(t['rights'].format(y=datetime.now().year))}</span></div>
+  <div class="wrap copy"><span>{e(t['rights'].format(y=datetime.now().year))}</span><a href="#top">{e(t['top_label'])}</a></div>
 </footer>"""
 
 
-def page(lang, path, title, desc, body, current="", kind="page"):
+def page(lang, path, title, desc, body, current="", kind="page", notes=()):
     t = T[lang]
     full = f"{title} | ASHIKA Group" if title else f"ASHIKA Group — {t['footer_tag']}"
     alternates = "".join(f'<link rel="alternate" hreflang="{T[l]["lang"]}" href="{SITE}{url(l, path)}">' for l in LANGS)
-    strings = {k: t[k] for k in ("seal_count", "konami", "copied", "game_t", "game_how", "game_start", "game_again", "game_over", "game_result",
-                                 "game_new_best", "game_paused", "game_resume_hint", "game_resume", "game_combo", "game_share_text",
-                                 "greet_morning", "greet_day", "greet_evening", "greet_night", "logo_toast", "secret_word")}
+    strings = {k: t[k] for k in ("copied", "game_t", "game_how", "game_start", "game_again", "game_over", "game_result", "game_new_best",
+                                 "game_paused", "game_resume_hint", "game_resume", "game_combo", "game_share_text")}
     strings["game_url"] = url(lang, "game/")
+    game_js = f'<script src="/assets/game.js?v={BUILD}" defer></script>' if kind in ("game", "lost") else ""
     out = f"""<!doctype html>
 <html lang="{t['lang']}" data-lang="{lang}">
 <head>
@@ -115,9 +147,8 @@ def page(lang, path, title, desc, body, current="", kind="page"):
 <meta name="theme-color" content="#14497e">
 <link rel="icon" href="/assets/mark.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700&family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css?v={BUILD}">
-<script>document.documentElement.classList.add("js");try{{var m=localStorage.getItem("ashika-theme");if(m)document.documentElement.dataset.theme=m}}catch(e){{}}</script>
 </head>
 <body data-page="{kind}">
 <a class="skip" href="#main">{e(t['skip'])}</a>
@@ -125,17 +156,17 @@ def page(lang, path, title, desc, body, current="", kind="page"):
 <main id="main" tabindex="-1">
 {body}
 </main>
-{footer(lang)}
+{footer(lang, notes)}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script type="application/json" id="strings">{json.dumps(strings, ensure_ascii=False)}</script>
-<script src="/assets/main.js?v={BUILD}" defer></script>{f'<script src="/assets/game.js?v={BUILD}" defer></script>' if kind in ("game", "lost") else ""}
+<script src="/assets/main.js?v={BUILD}" defer></script>{game_js}
 </body>
 </html>"""
     return keep_phrases(out) if lang == "ja-jp" else out
 
 
 # 代表者の氏名は文字で書かず、画像で出す（検索エンジンに拾わせないため。画像の場所は robots.txt で断る）。
-# 画像は文字の形だけ（透明の上に黒）で、CSS の mask で塗るので、明るい配色でも暗い配色でも文字色になる。
+# 画像は文字の形だけ（透明の上に黒）で、CSS の mask で塗るので、まわりの文字色になる。
 NAME_IMAGES = {
     "[[NAME_JA_B]]": ("name-ja-b", 275, 77, "代表者の氏名（画像）"),
     "[[NAME_JA_KANA]]": ("name-ja-kana", 801, 77, "代表者の氏名とよみ（画像）"),
@@ -158,7 +189,7 @@ def write(lang, path, content):
 
 
 # ---------------------------------------------------------------------------------------------
-# Pieces
+# Pieces（どのページも、ここの少ない部品だけで組む）
 # ---------------------------------------------------------------------------------------------
 MONTHS = ["Jan.", "Feb.", "Mar.", "Apr.", "May", "June", "July", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."]
 
@@ -168,104 +199,61 @@ def date_label(lang, iso, fmt="date_fmt"):
     return T[lang][fmt].format(y=y, m=m, d=d, mon=MONTHS[m - 1])
 
 
-def chars(text, start=0):
-    """Each character in its own span, so the heading can run in letter by letter (screen readers get the aria-label)."""
-    out, i = [], start
-    for n, word in enumerate(text.split(" ")):
-        if n:
-            out.append(" ")
-            i += 1
-        letters = "".join(f'<span class="ch" style="--i:{i + k}">{e(ch)}</span>' for k, ch in enumerate(word))
-        i += len(word)
-        # a Latin word must not break between its letters
-        out.append(letters if any(ord(c) > 0x2e80 for c in word) else f'<span class="w">{letters}</span>')
-    return "".join(out)
+def head(kicker, title, tag="h2"):
+    """小さな英字の札 + 見出し。説明文は付けない。"""
+    return f'<div class="head"><p class="kicker">{e(kicker)}</p><{tag}>{e(title)}</{tag}></div>'
 
 
-def run_title(lines, tag="h1", cls="run"):
-    spans = "".join(f'<span class="line">{e(line)}</span>' for line in lines)
-    return f'<{tag} class="{cls}">{spans}</{tag}>'
+def page_head(kicker, title, extra=""):
+    return f'<section class="page-head"><div class="wrap">{head(kicker, title, "h1")}{extra}</div></section>'
 
 
-def shot(s, lang, eager=False, peek=False):
-    seal = ""
-    return f"""<figure class="shot"><div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span>{e(s['host'])}</span></div>
-<img src="/assets/{s['img']}?v={BUILD}" width="1200" height="750" alt="{e(s['name'])}{' のトップページ' if lang == 'ja-jp' else ' home page'}"{'' if eager else ' loading="lazy"'}>{seal}</figure>"""
+def sec(inner, cls="", id_=""):
+    attr = f' id="{id_}"' if id_ else ""
+    return f'<section class="sec{" " + cls if cls else ""}"{attr}><div class="wrap">{inner}</div></section>'
 
 
-def section_head(kicker, title, lead="", tag="h2"):
-    lead_html = f'<p class="lead">{e(lead)}</p>' if lead else ""
-    return f'<div class="sec-head rv"><p class="kicker">{e(kicker)}</p><{tag}>{e(title)}</{tag}>{lead_html}</div>'
+def rows(pairs, raw=False):
+    """項目名と内容の表（罫線だけ）。"""
+    return '<dl class="rows">' + "".join(f"<div><dt>{e(k)}</dt><dd>{v if raw else e(v)}</dd></div>" for k, v in pairs) + "</dl>"
 
 
-def page_art(name):
-    """The animated drawing on the right of each page head: the icon draws itself, rings turn, chips float."""
-    chips = "".join(f'<span class="ph-chip c{i}"></span>' for i in range(1, 6))
-    return f"""<div class="ph-art" aria-hidden="true" data-parallax>
-  <div class="ph-ring r1"><i></i></div><div class="ph-ring r2"><i></i><i></i></div><div class="ph-ring r3"></div>
-  <div class="ph-core">{icon(name)}</div>{chips}
-</div>"""
+def ticks(items):
+    return '<ul class="ticks">' + "".join(f"<li>{icon('check')}<span>{e(x)}</span></li>" for x in items) + "</ul>"
 
 
-def page_head(kicker, title, lead, extra="", art="globe"):
-    return f"""<section class="page-head"><div class="wrap"><div class="sec-head"><p class="kicker">{e(kicker)}</p>{run_title([title], 'h1', 'run small')}<p class="lead">{e(lead)}</p></div>{extra}</div></section>"""
+def plain_list(items):
+    return '<ul class="list">' + "".join(f"<li>{e(x)}</li>" for x in items) + "</ul>"
 
 
-def profile_table(t):
-    rows = "".join(f'<div class="rv"><dt>{e(k)}</dt><dd>{v}</dd></div>' for k, v in t["profile"])
-    return f'<dl class="profile">{rows}</dl>'
+def steps(items):
+    return '<ol class="steps">' + "".join(f'<li><span class="no">{i + 1}</span><div><h3>{e(a)}</h3><p>{e(b)}</p></div></li>' for i, (a, b) in enumerate(items)) + "</ol>"
 
 
-def org_chart(t):
-    units = "".join(f'<li><div class="unit"><span>{e(kind)}</span><strong>{e(name)}</strong></div></li>' for kind, name in t["org_units"])
-    role, name = t["org_top"]
-    return f"""<figure class="org rv" aria-label="{e(t['org_t'])}">
-  <div class="org-top"><span>{e(role)}</span><strong>{e(name)}</strong></div>
-  <ul class="org-units">{units}</ul>
-</figure>"""
+def faqs(items):
+    return '<div class="faqs">' + "".join(f"<details><summary>{e(q)}</summary><p>{e(a)}</p></details>" for q, a in items) + "</div>"
 
 
-def locations(t):
-    cards = []
-    for i, (label, place, note) in enumerate(t["loc"]):
-        cards.append(f"""<div class="loc rv">{icon('pin' if i == 0 else 'server')}<div><p class="loc-label">{e(label)}</p><h3>{e(place)}</h3><p>{e(note)}</p></div></div>""")
-    return f'<div class="locs">{"".join(cards)}</div>'
+def shot(s, lang, eager=False):
+    lazy = "" if eager else ' loading="lazy"'
+    return f'<figure class="shot"><img src="/assets/{s["img"]}?v={BUILD}" width="1200" height="750" alt="{e(s["name"])}{V2[lang]["shot_alt"]}"{lazy}></figure>'
 
 
-def contact(lang, t):
-    rows = "".join(f'<li><span>{e(what)}</span><a href="{href}">{e(label)} {icon("ext")}</a></li>' for what, href, label in t["contact_rows"])
-    return f"""<div class="contact rv">
-  <p>{e(t['contact_p'])}</p>
-  <ul class="contact-list">{rows}</ul>
-  <button class="btn primary" type="button" data-mail="support" data-domain="ashikanw.com">{icon('mail')}{e(t['contact_mail'])}</button>
-</div>"""
+def toc(pairs, label):
+    return f'<nav class="toc" aria-label="{e(label)}">' + "".join(f'<a href="#{a}">{e(x)}</a>' for a, x in pairs) + "</nav>"
 
 
-def ticker(lang):
-    t = T[lang]
-    other = T["en-us" if lang == "ja-jp" else "ja-jp"]["ticker"]
-    item = f'<span>{e(t["ticker"])}</span><img src="/assets/seal.png?v={BUILD}" alt="" width="34" height="23"><span class="alt">{e(other)}</span><i></i>'
-    return f'<div class="ticker" aria-hidden="true"><div class="track">{item * 6}</div></div>'
+def mail_button(label, subject=""):
+    sub = f' data-subject="{e(subject)}"' if subject else ""
+    return f'<button class="btn primary" type="button" data-mail="support" data-domain="ashikanw.com"{sub}>{icon("mail")}{e(label)}</button>'
 
 
-def count_value(v):
-    """'30円' -> ('30', '円'); 'OSS' -> None. Numbers count up when the strip comes into view."""
-    m = re.match(r"^([¥]?)(\d+)(.*)$", v)
-    return (m.group(1), m.group(2), m.group(3)) if m else None
+def discord_button(label):
+    return f'<a class="btn" href="https://link.ashikanw.com/discord">{icon("chat")}{e(label)}</a>'
 
 
-def fact_items(facts, backs=None):
-    """The facts strip. With backs, each card flips over (hover, or tap on phones) to a second line."""
-    out = []
-    for i, (v, k) in enumerate(facts):
-        c = count_value(v)
-        val = f'{e(c[0])}<span class="num" data-to="{c[1]}">{c[1]}</span>{e(c[2])}' if c else e(v)
-        if backs:
-            out.append(f"""<li class="rv flip" tabindex="0"><div class="flip-in"><div class="face"><b>{val}</b><span>{e(k)}</span></div>
-<div class="face back"><span>{e(backs[i])}</span></div></div></li>""")
-        else:
-            out.append(f"<li class=\"rv\"><b>{val}</b><span>{e(k)}</span></li>")
-    return "".join(out)
+def more_link(href, label, ic="arrow"):
+    return f'<a class="link" href="{href}">{e(label)} {icon(ic)}</a>'
 
 
 def timeline(lang, entries):
@@ -273,250 +261,201 @@ def timeline(lang, entries):
     items = []
     for iso, cat, jt, jx, et, ex, future in entries:
         title, text = (jt, jx) if lang == "ja-jp" else (et, ex)
-        badge = f'<span class="badge future">{e(t["future"])}</span>' if future else ""
-        items.append(f"""<li class="tl-item rv{' is-future' if future else ''}" data-cat="{cat}">
-  <span class="tl-dot" aria-hidden="true"></span>
-  <div class="tl-card"><p class="tl-meta"><time datetime="{iso}">{e(date_label(lang, iso))}</time><span class="chip {cat}">{e(t['cat'][cat])}</span>{badge}</p>
-  <h3>{e(title)}</h3><p>{e(text)}</p></div>
+        badge = f'<span class="chip future">{e(t["future"])}</span>' if future else ""
+        items.append(f'<li><p class="meta"><time datetime="{iso}">{e(date_label(lang, iso))}</time><span class="chip">{e(t["cat"][cat])}</span>{badge}</p>'
+                     f"<h3>{e(title)}</h3><p>{e(text)}</p></li>")
+    return f'<ol class="timeline">{"".join(items)}</ol>'
+
+
+def service_list(lang, detail=False):
+    """番号つきのサービス一覧。画面の画像は出さず、1行＝1サービスの短い並びにする（行ごと押せる）。
+    detail のときは特徴も出す（サービスのページ）。"""
+    t = T[lang]
+    out = []
+    for i, s in enumerate(SERVICES):
+        c = s[lang[:2]]
+        extra = ticks(c["points"]) if detail else ""
+        out.append(f"""<li class="svc" id="{s['key']}">
+  <a class="svc-link" href="{s['url']}"><span class="no">{i + 1:02d}</span><span class="svc-name"><b>{e(s['name'])}</b><span class="kind">{e(c['kind'])}</span></span><span class="svc-host">{e(s['host'])}</span>{icon('ext')}</a>{extra}
 </li>""")
-    return f'<ol class="timeline"><span class="tl-line" aria-hidden="true"><span class="tl-fill"></span></span>{"".join(items)}</ol>'
+    return f'<ol class="svcs{" detail" if detail else ""}">{"".join(out)}</ol>'
 
 
 # ---------------------------------------------------------------------------------------------
 # Pages
 # ---------------------------------------------------------------------------------------------
 def home(lang):
-    t = T[lang]
+    t, v = T[lang], V2[lang]
     ja = lang == "ja-jp"
-    cards = "".join(f"""<article class="card rv">
-  {shot(s, lang)}
-  <div class="card-body"><p class="kind">{e(s[lang[:2]]['kind'])}</p><h3>{e(s['name'])}</h3><p>{e(s[lang[:2]]['lead'])}</p>
-  <div class="links"><a class="link" href="{url(lang, 'services/')}#{s['key']}">{e(t['more'])} {icon('arrow')}</a><a class="link quiet" href="{s['url']}">{e(t['visit'])} {icon('ext')}</a></div></div>
-</article>""" for s in SERVICES)
-    words = "".join(f'<li class="word rv"><b>{e(w)}</b><small>{e(sub)}</small></li>' for w, sub, _ in t["words"])
-    # いちばん新しいできごと（予定は除く）を、ニュースの一覧のように並べる
     recent = [h for h in HISTORY if not h[6]][-4:][::-1]
-    news = "".join(f"""<li><a href="{url(lang, 'history/')}"><time datetime="{iso}">{e(date_label(lang, iso))}</time><span class="chip {cat}">{e(t['cat'][cat])}</span><span class="news-t">{e(jt if ja else et)}</span>{icon('arrow')}</a></li>"""
+    news = "".join(f'<li><a href="{url(lang, "history/")}"><time datetime="{iso}">{e(date_label(lang, iso))}</time><span class="chip">{e(t["cat"][cat])}</span>'
+                   f'<span class="news-t">{e(jt if ja else et)}</span>{icon("arrow")}</a></li>'
                    for iso, cat, jt, jx, et, ex, _ in recent)
-    facts = "".join(f"<li><b>{e(v)}</b><span>{e(k)}</span></li>" for v, k in t["facts"])
-    tiles = "".join(f"""<a class="tile rv" href="{url(lang, href)}"><span class="tile-ic">{icon(ic)}</span><span class="tile-t">{e(label)}</span>{icon('arrow')}</a>"""
-                    for href, label, ic in [("about/", t["profile_t"], "doc"), ("vision/", t["vision_t"], "spark"), ("history/", "沿革" if ja else "History", "clock"), ("technology/", "技術・設備" if ja else "Technology", "server")])
-    sign_role, sign_name = t["msg_sign"]
+    facts = "".join(f"<li><b>{e(a)}</b><span>{e(k)}</span></li>" for a, k in t["facts"])
+    title = "".join(f"<span>{e(line)}</span>" for line in t["hero_t"])
     body = f"""
-<section class="hero2" style="--hero:url(/assets/hero-osaka.webp?v={BUILD})">
-  <div class="wrap">
-    <p class="kicker">{e(t['hero_k'])}</p>
-    {run_title(t['hero_t'])}
-    <p class="lead">{e(t['hero_p'])}</p>
-    <div class="actions"><a class="btn primary" href="{url(lang, t['hero_cta'][1])}">{e(t['hero_cta'][0])} {icon('arrow')}</a><a class="btn on-dark" href="{url(lang, t['hero_cta2'][1])}">{e(t['hero_cta2'][0])}</a></div>
-  </div>
-  <p class="sat-credit">{e(t['sat_credit'])}</p>
-</section>
-<div class="wrap"><ul class="facts plain">{facts}</ul></div>
-<section class="sec" id="news">
-  <div class="wrap">
-    <div class="head-row">{section_head(t['hist_k'], t['hist_home_t'])}<a class="link" href="{url(lang, 'history/')}">{e(t['hist_all'])} {icon('arrow')}</a></div>
-    <ul class="news">{news}</ul>
-  </div>
-</section>
-<section class="sec tint" id="services">
-  <div class="wrap">{section_head(t['biz_k'], t['biz_t'], t['biz_p'])}<div class="cards">{cards}</div></div>
-</section>
-<section class="sec vision-teaser">
-  <div class="wrap">
-    {section_head(t['vision_k'], t['footer_tag'], t['vision_p'])}
-    <ol class="words">{words}</ol>
-    <a class="link rv" href="{url(lang, 'vision/')}">{e(t['vision_t'])} {icon('arrow')}</a>
-  </div>
-</section>
-<section class="sec tint">
-  <div class="wrap message-teaser">
-    {section_head(t['msg_k'], t['msg_t'])}
-    <blockquote class="rv"><p>{e(t['msg_short'])}</p><footer><span>{e(sign_role)}</span><strong>{e(sign_name)}</strong></footer></blockquote>
-    <a class="link rv" href="{url(lang, 'about/')}#message">{e(t['more'])} {icon('arrow')}</a>
+<section class="hero" style="--photo:url(/assets/hero-osaka.webp?v={BUILD})">
+  <p class="hero-word" aria-hidden="true">ASHIKA GROUP</p>
+  <div class="wrap hero-in">
+    <div class="hero-copy">
+      <h1>{title}</h1>
+      <a class="btn primary" href="{url(lang, t['hero_cta'][1])}">{e(t['hero_cta'][0])} {icon('arrow')}</a>
+    </div>
+    <div class="hero-art" aria-hidden="true"><span class="seal"></span></div>
   </div>
 </section>
 <section class="sec">
-  <div class="wrap two-up">
-    <div class="panel rv"><p class="kicker">{e(t['sp_k'])}</p><h2>{e(t['sp_home_t'])}</h2><p class="lead">{e(t['sp_home_p'])}</p>
-    <a class="btn primary" href="{url(lang, 'supportprogram/')}">{e(t['sp_t'])} {icon('arrow')}</a></div>
-    <div class="panel rv"><p class="kicker">{e(t['join_k'])} <span class="open-pill"><i></i>{e(t['join_open'])}</span></p><h2>{e(t['join_home_t'])}</h2><p class="lead">{e(t['join_home_p'])}</p>
-    <a class="btn primary" href="{url(lang, 'join/')}">{e(t['join_t'])} {icon('arrow')}</a></div>
+  <div class="wrap two">
+    {head(v['about_k'], v['about_t'])}
+    <div>
+      <p class="statement">{e(t['hero_p'])}</p>
+      <ul class="facts">{facts}</ul>
+      {more_link(url(lang, 'about/'), t['more'])}
+    </div>
   </div>
 </section>
-<section class="sec tint">
-  <div class="wrap">{section_head(t['co_k'], t['co_t'])}<div class="tiles">{tiles}</div></div>
+<section class="sec tint arc" id="services">
+  <div class="wrap">{head(t['biz_k'], t['biz_t'])}{service_list(lang)}</div>
+</section>
+<section class="sec" id="news">
+  <div class="wrap two">
+    {head(v['news_k'], t['hist_home_t'])}
+    <div><ul class="news">{news}</ul>{more_link(url(lang, 'history/'), t['hist_all'])}</div>
+  </div>
+</section>
+<section class="sec doors-sec">
+  <div class="wrap doors">
+    <a class="door" href="{url(lang, 'supportprogram/')}"><span class="kicker">{e(t['sp_k'])}</span><b>{e(t['sp_t'])}</b><span>{e(v['sp_line'])}</span>{icon('arrow')}</a>
+    <a class="door" href="{url(lang, 'join/')}"><span class="kicker">{e(t['join_k'])}</span><b>{e(t['join_t'])}</b><span>{e(v['join_line'])}</span>{icon('arrow')}</a>
+  </div>
 </section>"""
-    return page(lang, "", "", t["desc"], body, "", "home")
+    return page(lang, "", "", t["desc"], body, "", "home", notes=[t["sat_credit"]])
 
 
 def about(lang):
     t = T[lang]
     sign_role, sign_name = t["msg_sign"]
     local = [("message", t["msg_t"]), ("profile", t["profile_t"]), ("organization", t["org_t"]), ("locations", t["loc_t"]), ("contact", t["contact_t"])]
-    toc = '<nav class="toc rise" style="--d:2" aria-label="' + e(t["co_t"]) + '">' + "".join(f'<a href="#{a}">{e(label)}</a>' for a, label in local) + "</nav>"
-    paragraphs = "".join(f'<p class="rv">{e(p)}</p>' for p in t["msg_body"])
-    body = f"""
-{page_head(t['co_k'], t['co_t'], t['desc'], toc)}
-<section class="sec" id="message"><div class="wrap narrow">
-  <h2 class="rv">{e(t['msg_t'])}</h2>
-  <div class="message"><p class="message-lead rv">{e(t['msg_short'])}</p>{paragraphs}<p class="sign rv"><span>{e(sign_role)}</span><strong>{e(sign_name)}</strong></p></div>
-</div></section>
-<section class="sec tint" id="profile"><div class="wrap narrow"><h2 class="rv">{e(t['profile_t'])}</h2>{profile_table(t)}</div></section>
-<section class="sec" id="organization"><div class="wrap narrow"><h2 class="rv">{e(t['org_t'])}</h2><p class="lead rv">{e(t['org_p'])}</p>{org_chart(t)}</div></section>
-<section class="sec tint" id="locations"><div class="wrap narrow"><h2 class="rv">{e(t['loc_t'])}</h2>{locations(t)}</div></section>
-<section class="sec" id="contact"><div class="wrap narrow"><h2 class="rv">{e(t['contact_t'])}</h2>{contact(lang, t)}</div></section>"""
+    paragraphs = "".join(f"<p>{e(p)}</p>" for p in t["msg_body"])
+    units = "".join(f"<li><span>{e(kind)}</span><strong>{e(name)}</strong></li>" for kind, name in t["org_units"])
+    role, name = t["org_top"]
+    org = f'<figure class="org" aria-label="{e(t["org_t"])}"><div class="org-top"><span>{e(role)}</span><strong>{e(name)}</strong></div><ul>{units}</ul></figure>'
+    contact = rows([(what, f'<a href="{href}">{e(label)} {icon("ext")}</a>') for what, href, label in t["contact_rows"]], raw=True)
+    message = (f'<h2>{e(t["msg_t"])}</h2><div class="message"><p class="statement">{e(t["msg_short"])}</p>{paragraphs}'
+               f'<p class="sign"><span>{e(sign_role)}</span><strong>{e(sign_name)}</strong></p></div>')
+    body = "\n".join([
+        page_head(t["co_k"], t["co_t"], toc(local, t["co_t"])),
+        sec(message, "narrow", "message"),
+        sec(f'<h2>{e(t["profile_t"])}</h2>{rows(t["profile"], raw=True)}', "narrow tint", "profile"),
+        sec(f'<h2>{e(t["org_t"])}</h2>{org}', "narrow", "organization"),
+        sec(f'<h2>{e(t["loc_t"])}</h2>{rows([(label, place) for label, place, _ in t["loc"]])}', "narrow tint", "locations"),
+        sec(f'<h2>{e(t["contact_t"])}</h2>{contact}<p class="actions">{mail_button(t["contact_mail"])}</p>', "narrow", "contact"),
+    ])
     return page(lang, "about/", t["co_t"], t["desc"], body, "about/")
 
 
 def services(lang):
     t = T[lang]
-    rows = []
-    for i, s in enumerate(SERVICES):
-        c = s[lang[:2]]
-        points = "".join(f'<li class="rv" style="--d:{j}">{icon("check")}<span>{e(p)}</span></li>' for j, p in enumerate(c["points"]))
-        rows.append(f"""<section class="biz{' flip' if i % 2 else ''}" id="{s['key']}">
-  <div class="biz-text"><p class="kind rv">{e(c['kind'])}</p><h2 class="rv">{e(s['name'])}</h2><p class="lead rv">{e(c['lead'])}</p><ul class="points">{points}</ul>
-  <a class="btn primary rv" href="{s['url']}">{e(t['visit'])} {icon('ext')}</a></div>
-  <div class="rv slide">{shot(s, lang, eager=i == 0)}</div>
-</section>""")
-    body = f"""
-{page_head(t['biz_k'], t['biz_t'], t['biz_page_p'], art='server')}
-<div class="wrap biz-list">{''.join(rows)}</div>"""
+    body = page_head(t["biz_k"], t["biz_t"]) + sec(service_list(lang, detail=True))
     return page(lang, "services/", t["biz_t"], t["desc"], body, "services/")
 
 
 def vision(lang):
     t = T[lang]
-    big = f"""<section class="manifesto"><div class="wrap">
-  <p class="kicker rv">{e(t['words_t'])}</p>
-  <div class="mf-words">{''.join(f'<div class="mf rv" style="--d:{i}"><p class="mf-sub">{e(sub)}</p><h2>{e(w)}</h2><p>{e(txt)}</p></div>' for i, (w, sub, txt) in enumerate(t['words']))}</div>
-</div></section>"""
-    values = "".join(f"""<li class="value rv" style="--d:{i}"><span class="v-no">{i + 1:02d}</span><h3>{e(name)}</h3><p>{e(txt)}</p></li>""" for i, (name, txt) in enumerate(t["values"]))
-    mapping = "".join(f"""<li class="map-item rv" style="--d:{i}"><img src="/assets/{s['img']}?v={BUILD}" alt="" width="1200" height="750" loading="lazy"><div><p class="kind">{e(s['name'])}</p><h3>{e(t['map'][s['key']][0])}</h3><p>{e(t['map'][s['key']][1])}</p></div></li>""" for i, s in enumerate(SERVICES))
-    body = f"""
-{page_head(t['vision_k'], t['vision_t'], t['vision_p'], art='spark')}
-<section class="slogan" aria-label="{e(t['footer_tag'])}"><div class="wrap">{run_title(t['hero_t'], 'p', 'run huge')}</div></section>
-{big}
-<section class="sec tint"><div class="wrap"><h2 class="rv">{e(t['values_t'])}</h2><ol class="values">{values}</ol></div></section>
-<section class="sec"><div class="wrap"><h2 class="rv">{e(t['map_t'])}</h2><ol class="map">{mapping}</ol></div></section>"""
-    return page(lang, "vision/", t["vision_t"], t["vision_p"], body, "vision/", "vision")
+    words = "".join(f'<li><p class="kicker">{e(sub)}</p><h3>{e(w)}</h3><p>{e(txt)}</p></li>' for w, sub, txt in t["words"])
+    values = "".join(f'<li><span class="no">{i + 1:02d}</span><h3>{e(name)}</h3><p>{e(txt)}</p></li>' for i, (name, txt) in enumerate(t["values"]))
+    mapping = rows([(s["name"], t["map"][s["key"]][0]) for s in SERVICES])
+    slogan = "".join(f"<span>{e(line)}</span>" for line in t["hero_t"])
+    body = "\n".join([
+        page_head(t["vision_k"], t["vision_t"]),
+        f'<section class="slogan"><div class="wrap"><p>{slogan}</p></div></section>',
+        sec(f'<h2>{e(t["words_t"])}</h2><ul class="cards three">{words}</ul>'),
+        sec(f'<h2>{e(t["values_t"])}</h2><ol class="cards">{values}</ol>', "tint"),
+        sec(f'<h2>{e(t["map_t"])}</h2>{mapping}', "narrow"),
+    ])
+    return page(lang, "vision/", t["vision_t"], t["vision_p"], body, "vision/")
 
 
 def history(lang):
     t = T[lang]
-    years = sorted({h[0][:4] for h in HISTORY})
-    blocks = []
-    for y in years:
-        entries = [h for h in HISTORY if h[0].startswith(y)]
-        blocks.append(f'<section class="year"><h2 class="year-no rv" data-year="{y}">{y}</h2>{timeline(lang, entries)}</section>')
-    body = f"""
-{page_head(t['hist_k'], t['hist_t'], t['hist_p'], art='clock')}
-<div class="sec"><div class="wrap narrow">{''.join(blocks)}</div></div>"""
-    return page(lang, "history/", t["hist_t"], t["hist_p"], body, "history/", "history")
+    years = sorted({h[0][:4] for h in HISTORY}, reverse=True)
+    blocks = "".join(f'<section class="year"><h2>{y}</h2>{timeline(lang, [h for h in HISTORY if h[0].startswith(y)][::-1])}</section>' for y in years)
+    body = page_head(t["hist_k"], t["hist_t"]) + sec(blocks, "narrow")
+    return page(lang, "history/", t["hist_t"], t["hist_p"], body, "history/")
 
 
 def technology(lang):
     t = T[lang]
     by_key = {s["key"]: s for s in SERVICES}
-    stats = "".join(f'<li class="rv" style="--d:{i}"><b>{f"<span class=num data-to={v}>{v}</span>" if v.isdigit() else e(v)}{e(unit)}</b><span>{e(label)}</span></li>' for i, (v, unit, label) in enumerate(t["tech_stats"]))
-    blocks = []
-    for key, kind, rows in t["tech"]:
-        s = by_key[key]
-        dl = "".join(f'<div class="rv" style="--d:{i}"><dt>{e(k)}</dt><dd>{e(v)}</dd></div>' for i, (k, v) in enumerate(rows))
-        blocks.append(f"""<article class="tech-block" id="{key}"><header class="rv"><p class="kind">{e(kind)}</p><h2>{e(s['name'])}</h2><a class="link quiet" href="{s['url']}">{e(s['host'])} {icon('ext')}</a></header><dl class="spec">{dl}</dl></article>""")
-    web = "".join(f'<div class="rv"><dt>{e(k)}</dt><dd>{e(v)}</dd></div>' for k, v in t["web"])
-    repos = "".join(f"""<li class="repo rv" style="--d:{i}"><a href="https://github.com/{path}">{icon('github')}<span><b>{e(name)}</b><small>{e(ja if lang == 'ja-jp' else en)}</small></span>{icon('ext')}</a></li>""" for i, (name, path, ja, en) in enumerate(REPOS))
-    body = f"""
-{page_head(t['tech_k'], t['tech_t'], t['tech_p'], art='code')}
-<section class="sec"><div class="wrap"><ul class="facts stats">{stats}</ul>
-<div class="tech-list">{''.join(blocks)}<article class="tech-block" id="web"><header class="rv"><p class="kind">Web</p><h2>{e(t['web_t'])}</h2></header><dl class="spec">{web}</dl></article></div></div></section>
-<section class="sec tint"><div class="wrap"><h2 class="rv">{e(t['oss_t'])}</h2><p class="lead rv">{e(t['oss_p'])}</p><ul class="repos">{repos}</ul></div></section>"""
-    return page(lang, "technology/", t["tech_t"], t["tech_p"], body, "technology/", "technology")
+    stats = "".join(f"<li><b>{e(a)}{e(unit)}</b><span>{e(label)}</span></li>" for a, unit, label in t["tech_stats"])
+    blocks = "".join(f'<article class="tech" id="{key}"><header><p class="kicker">{e(kind)}</p><h2>{e(by_key[key]["name"])}</h2></header>{rows(items)}</article>'
+                     for key, kind, items in t["tech"])
+    blocks += f'<article class="tech" id="web"><header><p class="kicker">Web</p><h2>{e(t["web_t"])}</h2></header>{rows(t["web"])}</article>'
+    repos = "".join(f'<li><a href="https://github.com/{path}">{icon("github")}<span><b>{e(name)}</b><small>{e(ja if lang == "ja-jp" else en)}</small></span>{icon("ext")}</a></li>'
+                    for name, path, ja, en in REPOS)
+    body = "\n".join([
+        page_head(t["tech_k"], t["tech_t"]),
+        # 自前のサーバーの中の写真。ラベル（シリアル番号・管理用の初期パスワード）と床が写らない範囲だけを切り出してある
+        f'<div class="wrap"><figure class="photo"><img src="/assets/server-inside.webp?v={BUILD}" width="880" height="480" alt="{e(V2[lang]["server_alt"])}"></figure></div>',
+        sec(f'<ul class="facts">{stats}</ul>{blocks}'),
+        sec(f'<h2>{e(t["oss_t"])}</h2><ul class="repos">{repos}</ul>', "tint"),
+    ])
+    return page(lang, "technology/", t["tech_t"], t["tech_p"], body, "technology/")
 
 
 def brand(lang):
     t = T[lang]
-    rules = "".join(f'<li class="rv" style="--d:{i}"><h3>{e(a)}</h3><p>{e(b)}</p></li>' for i, (a, b) in enumerate(t["rules"]))
-    swatches = "".join(f"""<li class="rv" style="--d:{i}"><button class="swatch" type="button" data-copy="{hx}" style="--c:{hx}"><span class="chip-c"></span><b>{e(name)}</b><code>{hx}</code><small>{e(t['color_use'][name])}</small></button></li>""" for i, (name, hx) in enumerate(COLORS))
-    dls = "".join(f'<li class="rv"><a class="btn" href="/assets/{fn}" download>{icon("download")}{e(label)}</a></li>' for fn, label in t["dl"])
-    body = f"""
-{page_head(t['brand_k'], t['brand_t'], t['brand_p'], art='palette')}
-<section class="sec"><div class="wrap split">
-  <div><h2 class="rv">{e(t['mark_t'])}</h2><p class="rv">{e(t['mark_p'])}</p><ul class="rules">{rules}</ul></div>
-  <div class="mark-boards rv"><div class="board light"><img src="/assets/mark.png?v={BUILD}" alt="ASHIKA Group" width="512" height="339"></div><div class="board dark"><img src="/assets/mark.png?v={BUILD}" alt="" width="512" height="339"></div>
-  <div class="board wm"><span class="wordmark">ASHIKA <b>Group</b></span></div></div>
-</div></section>
-<section class="sec tint"><div class="wrap"><h2 class="rv">{e(t['colors_t'])}</h2><p class="lead rv">{e(t['colors_p'])}</p><ul class="swatches">{swatches}</ul></div></section>
-<section class="sec"><div class="wrap split">
-  <div><h2 class="rv">{e(t['type_t'])}</h2><p class="rv">{e(t['type_p'])}</p></div>
-  <div class="type-sample rv"><p class="ts-ja">情報と世界を駆け巡る</p><p class="ts-en">Across information, around the world.</p><p class="ts-meta">Inter · Noto Sans JP</p></div>
-</div></section>
-<section class="sec tint"><div class="wrap"><h2 class="rv">{e(t['dl_t'])}</h2><ul class="downloads">{dls}</ul></div></section>"""
-    return page(lang, "brand/", t["brand_t"], t["brand_p"], body, "brand/", "brand")
+    swatches = "".join(f'<li><button class="swatch" type="button" data-copy="{hx}"><span class="swatch-c" style="background:{hx}"></span><b>{e(name)}</b><code>{hx}</code>'
+                       f'<small>{e(t["color_use"][name])}</small></button></li>' for name, hx in COLORS)
+    dls = "".join(f'<a class="btn" href="/assets/{fn}" download>{icon("download")}{e(label)}</a>' for fn, label in t["dl"])
+    boards = (f'<div class="boards"><div class="board"><img src="/assets/mark.png?v={BUILD}" alt="ASHIKA Group" width="512" height="339"></div>'
+              f'<div class="board dark"><img src="/assets/mark.png?v={BUILD}" alt="" width="512" height="339"></div></div>')
+    sample = '<div class="type-sample"><p class="ts-ja">情報と世界を駆け巡る</p><p class="ts-en">Across information, around the world.</p></div>'
+    body = "\n".join([
+        page_head(t["brand_k"], t["brand_t"]),
+        sec(f'<h2>{e(t["mark_t"])}</h2>{boards}<h3>{e(t["rules_t"])}</h3>{rows(t["rules"])}', "narrow"),
+        sec(f'<h2>{e(t["colors_t"])}</h2><p class="hint">{e(t["colors_p"])}</p><ul class="swatches">{swatches}</ul>', "narrow tint"),
+        sec(f'<h2>{e(t["type_t"])}</h2>{sample}<p class="hint">{e(V2[lang]["type_p"])}</p>', "narrow"),
+        sec(f'<h2>{e(t["dl_t"])}</h2><p class="actions">{dls}</p>', "narrow tint"),
+    ])
+    return page(lang, "brand/", t["brand_t"], t["brand_p"], body, "brand/")
 
 
 def join(lang):
     t = T[lang]
-    roles = []
-    for i, (key, name, sub, lead, tasks, want) in enumerate(t["roles"]):
-        items = "".join(f"<li>{icon('check')}<span>{e(x)}</span></li>" for x in tasks)
-        roles.append(f"""<article class="role-card rv" id="{key}" style="--d:{i}">
-  <div class="role-icon">{icon('code' if key == 'engineer' else 'chat')}</div>
-  <p class="kind">{e(sub)}</p><h3>{e(name)}</h3><p>{e(lead)}</p>
-  <ul class="points">{items}</ul>
-  <div class="want"><b>{e(t['roles_want'])}</b><p>{e(want)}</p></div>
-</article>""")
-    first, *rest = t["perks"]
-    racks = "".join(f'<span style="--d:{i}"><i></i><i></i></span>' for i in range(JOIN_SERVERS))
-    perks = "".join(f'<li class="perk rv" style="--d:{i}">{icon(ic)}<div><h3>{e(a)}</h3><p>{e(b)}</p></div></li>' for i, (ic, a, b) in enumerate(rest))
-    steps = "".join(f'<li class="step rv" style="--d:{i}"><span class="step-no">{i + 1}</span><div><h3>{e(a)}</h3><p>{e(b)}</p></div></li>' for i, (a, b) in enumerate(t["steps"]))
-    apply_items = "".join(f'<li>{e(x)}{f"""<span class="must">{e(t['apply_must'])}</span>""" if must else ""}</li>' for x, must in t["apply_items"])
-    faq = "".join(f'<details class="faq rv"><summary>{e(q)}</summary><p>{e(a)}</p></details>' for q, a in t["join_faq"])
-    disclaimer = "".join(f"<li>{e(x)}</li>" for x in t["disclaimer"])
+    roles = "".join(f'<li id="{key}"><p class="kicker">{e(sub)}</p><h3>{e(name)}</h3>{ticks(tasks)}<p class="want"><b>{e(t["roles_want"])}</b>{e(want)}</p></li>'
+                    for key, name, sub, lead, tasks, want in t["roles"])
+    perks = ticks([a for _, a, _ in t["perks"]])  # 見出しだけで伝わるので、説明は出さない
+    must = f'<span class="must">{e(t["apply_must"])}</span>'
+    apply_items = "".join(f"<li>{e(x)}{must if need else ''}</li>" for x, need in t["apply_items"])
     subject = "お手伝い応募" if lang == "ja-jp" else "Joining ASHIKA Group"
-    open_pill = f'<p class="rise" style="--d:2"><span class="open-pill big"><i></i>{e(t["join_open"])}</span></p>'
-    body = f"""
-{page_head(t['join_k'], t['join_t'], t['join_p'], open_pill, art='users')}
-<section class="sec"><div class="wrap"><h2 class="rv">{e(t['roles_t'])}</h2><div class="roles">{''.join(roles)}</div></div></section>
-<section class="sec tint"><div class="wrap">
-  <h2 class="rv">{e(t['perks_t'])}</h2>
-  <div class="perk-hero rv">
-    <div class="perk-big"><b><span class="num" data-to="{JOIN_SERVERS}">{JOIN_SERVERS}</span></b><div><h3>{e(first[1])}</h3><p>{e(first[2])}</p></div></div>
-    <div class="racks" aria-hidden="true">{racks}</div>
-  </div>
-  <ul class="perks">{perks}</ul>
-</div></section>
-<section class="sec" id="apply"><div class="wrap split">
-  <div><h2 class="rv">{e(t['steps_t'])}</h2><ol class="steps">{steps}</ol></div>
-  <div class="apply-box rv"><h2>{e(t['apply_t'])}</h2><p class="apply-req"><span>{e(t['apply_req_k'])}</span><b>{e(t['apply_req'])}</b></p><p>{e(t['apply_p'])}</p><ul>{apply_items}</ul><p class="apply-note">{e(t['apply_note'])}</p>
-    <div class="actions"><button class="btn primary" type="button" data-mail="support" data-domain="ashikanw.com" data-subject="{e(subject)}">{icon('mail')}{e(t['apply_mail'])}</button>
-    <a class="btn" href="https://link.ashikanw.com/discord">{icon('chat')}{e(t['apply_discord'])}</a></div></div>
-</div></section>
-<section class="sec tint"><div class="wrap narrow"><h2 class="rv">{e(t['join_faq_t'])}</h2><div class="faqs">{faq}</div></div></section>
-<section class="sec"><div class="wrap narrow"><div class="disclaimer rv"><h2>{e(t['disclaimer_t'])}</h2><ul>{disclaimer}</ul>
-<a class="link" href="{url(lang, 'join/terms/')}">{e(t['terms_link'])} {icon('arrow')}</a></div></div></section>"""
-    return page(lang, "join/", t["join_t"], t["join_p"], body, "join/", "join")
+    apply = (f'<div class="two"><div><h2>{e(t["steps_t"])}</h2>{steps(t["steps"])}</div>'
+             f'<div class="box"><h2>{e(t["apply_t"])}</h2><p class="req"><span>{e(t["apply_req_k"])}</span><b>{e(t["apply_req"])}</b></p><p>{e(t["apply_p"])}</p>'
+             f'<ul class="list">{apply_items}</ul><p class="hint">{e(t["apply_note"])}</p>'
+             f'<p class="actions">{mail_button(t["apply_mail"], subject)}{discord_button(t["apply_discord"])}</p></div></div>')
+    fine = f'<div class="fine"><h2>{e(t["disclaimer_t"])}</h2>{plain_list(t["disclaimer"])}{more_link(url(lang, "join/terms/"), t["terms_link"])}</div>'
+    body = "\n".join([
+        page_head(t["join_k"], t["join_t"], f'<p><span class="chip open">{e(t["join_open"])}</span></p>'),
+        sec(f'<h2>{e(t["roles_t"])}</h2><ul class="cards two-col">{roles}</ul>'),
+        sec(f'<h2>{e(t["perks_t"])}</h2>{perks}', "narrow tint"),
+        sec(apply, "", "apply"),
+        sec(f'<h2>{e(t["join_faq_t"])}</h2>{faqs(t["join_faq"])}', "narrow tint"),
+        sec(fine, "narrow"),
+    ])
+    return page(lang, "join/", t["join_t"], t["join_p"], body, "join/")
 
 
 def terms_page(lang, path, current, kicker, title, lead, dated, date, articles, back_path, back_label):
     """Terms with numbered articles (member terms, support program terms)."""
     t = T[lang]
-    toc = '<nav class="toc rise" style="--d:2">' + "".join(
-        f'<a href="#a{n}">{e(t["terms_article"].format(n=n))}</a>' for n in range(1, len(articles) + 1)) + "</nav>"
+    nav = toc([(f"a{n}", t["terms_article"].format(n=n)) for n in range(1, len(articles) + 1)], title)
     sections = []
     for n, (name, clauses) in enumerate(articles, 1):
-        head = f'{t["terms_article"].format(n=n)}（{name}）' if lang == "ja-jp" else f'{t["terms_article"].format(n=n)}. {name}'
-        items = "".join(f"<li>{e(c)}</li>" for c in clauses)
-        sections.append(f'<section class="article rv" id="a{n}"><h2>{e(head)}</h2><ol>{items}</ol></section>')
-    body = f"""
-{page_head(kicker, title, lead, toc, art='doc')}
-<div class="sec"><div class="wrap narrow">
-  <p class="terms-date"><time datetime="{date}">{e(dated)}</time></p>
-  <div class="terms">{''.join(sections)}</div>
-  <p class="terms-end">{e(t['footer_tag'])} — ASHIKA Group</p>
-  <a class="link" href="{url(lang, back_path)}">{e(back_label)} {icon('arrow')}</a>
-</div></div>"""
+        h = f'{t["terms_article"].format(n=n)}（{name}）' if lang == "ja-jp" else f'{t["terms_article"].format(n=n)}. {name}'
+        sections.append(f'<section id="a{n}"><h2>{e(h)}</h2><ol>{"".join(f"<li>{e(c)}</li>" for c in clauses)}</ol></section>')
+    inner = (f'<p class="hint"><time datetime="{date}">{e(dated)}</time></p><div class="terms">{"".join(sections)}</div>'
+             f'{more_link(url(lang, back_path), back_label)}')
+    body = page_head(kicker, title, nav) + sec(inner, "narrow")
     return page(lang, path, title, lead, body, current, "terms")
 
 
@@ -529,33 +468,20 @@ def join_terms(lang):
 def support(lang):
     t = T[lang]
     cards = []
-    for i, (key, name, sub, count, lead, who, need) in enumerate(t["sp_programs"]):
-        who_items = "".join(f"<li>{icon('check')}<span>{e(x)}</span></li>" for x in who)
-        need_items = "".join(f"<li>{e(x)}</li>" for x in need)
-        note = f'<p class="sp-note">{e(t["sp_hardship_note"])}</p>' if key == "personal" else ""
-        cards.append(f"""<article class="program rv {key}" id="{key}" style="--d:{i}">
-  <div class="program-top"><b><span class="num" data-to="{count}">{count}</span></b><span>{e(t['sp_unit'])}</span></div>
-  <p class="kind">{e(sub)}</p><h3>{e(name)}</h3><p>{e(lead)} {e(t['sp_more'])}</p>
-  <h4>{e(t['sp_who'])}</h4><ul class="points">{who_items}</ul>
-  <h4>{e(t['sp_need'])}</h4><ul class="need">{need_items}</ul>{note}
-</article>""")
-    steps = "".join(f'<li class="step rv" style="--d:{i}"><span class="step-no">{i + 1}</span><div><h3>{e(a)}</h3><p>{e(b)}</p></div></li>' for i, (a, b) in enumerate(t["sp_steps"]))
-    faq = "".join(f'<details class="faq rv"><summary>{e(q)}</summary><p>{e(a)}</p></details>' for q, a in t["sp_faq"])
-    notes = "".join(f"<li>{e(x)}</li>" for x in t["sp_notes"])
+    for key, name, sub, count, lead, who, need in t["sp_programs"]:
+        note = f'<p class="hint">{e(t["sp_hardship_note"])}</p>' if key == "personal" else ""
+        cards.append(f'<li id="{key}"><p class="big"><b>{count}</b><span>{e(t["sp_unit"])}</span></p><p class="kicker">{e(sub)}</p><h3>{e(name)}</h3>'
+                     f'<h4>{e(t["sp_who"])}</h4>{ticks(who)}<h4>{e(t["sp_need"])}</h4>{plain_list(need)}{note}</li>')
     subject = "支援プログラム申請" if lang == "ja-jp" else "Support program application"
-    body = f"""
-{page_head(t['sp_k'], t['sp_t'], t['sp_p'], art='heart')}
-<section class="sec"><div class="wrap"><h2 class="rv">{e(t['sp_programs_t'])}</h2><div class="programs">{''.join(cards)}</div></div></section>
-<section class="sec tint" id="apply"><div class="wrap split">
-  <div><h2 class="rv">{e(t['sp_steps_t'])}</h2><ol class="steps">{steps}</ol></div>
-  <div class="apply-box rv"><h2>{e(t['sp_steps'][0][0])}</h2><p>{e(t['sp_steps'][0][1])}</p>
-    <div class="actions"><button class="btn primary" type="button" data-mail="support" data-domain="ashikanw.com" data-subject="{e(subject)}">{icon('mail')}{e(t['sp_apply_mail'])}</button>
-    <a class="btn" href="https://link.ashikanw.com/discord">{icon('chat')}{e(t['sp_apply_discord'])}</a></div></div>
-</div></section>
-<section class="sec"><div class="wrap narrow"><h2 class="rv">{e(t['sp_faq_t'])}</h2><div class="faqs">{faq}</div></div></section>
-<section class="sec tint"><div class="wrap narrow"><div class="disclaimer rv"><h2>{e(t['sp_notes_t'])}</h2><ul>{notes}</ul>
-<a class="link" href="{url(lang, 'supportprogram/terms/')}">{e(t['sp_terms_link'])} {icon('arrow')}</a></div></div></section>"""
-    return page(lang, "supportprogram/", t["sp_t"], t["sp_p"], body, "supportprogram/", "support")
+    fine = f'<div class="fine"><h2>{e(t["sp_notes_t"])}</h2>{plain_list(t["sp_notes"])}{more_link(url(lang, "supportprogram/terms/"), t["sp_terms_link"])}</div>'
+    body = "\n".join([
+        page_head(t["sp_k"], t["sp_t"]),
+        sec(f'<h2>{e(t["sp_programs_t"])}</h2><ul class="cards two-col">{"".join(cards)}</ul>'),
+        sec(f'<h2>{e(t["sp_steps_t"])}</h2>{steps(t["sp_steps"])}<p class="actions">{mail_button(t["sp_apply_mail"], subject)}{discord_button(t["sp_apply_discord"])}</p>', "narrow tint", "apply"),
+        sec(f'<h2>{e(t["sp_faq_t"])}</h2>{faqs(t["sp_faq"])}', "narrow"),
+        sec(fine, "narrow tint"),
+    ])
+    return page(lang, "supportprogram/", t["sp_t"], t["sp_p"], body, "supportprogram/")
 
 
 def support_terms(lang):
@@ -571,35 +497,23 @@ def game_box(lang, full=False):
   <div class="sg-hud"><span>{e(t['game_score'])} <b data-score>0</b></span><span class="sg-combo" data-combo aria-live="polite"></span>
   <span>{e(t['game_best'])} <b data-best>0</b></span><span>{e(t['game_lives'])} <b class="sg-lives" data-lives>●●●</b></span></div>
   <canvas tabindex="0" aria-label="{e(t['game_t'])}"></canvas>
-  <div class="sg-overlay" data-overlay><p class="kicker">{e('Game')}</p><h2 data-title>{e(t['game_t'])}</h2><p data-text>{e(t['game_how'])}</p>
+  <div class="sg-overlay" data-overlay><h2 data-title>{e(t['game_t'])}</h2><p data-text>{e(t['game_how'])}</p>
   <div class="actions"><button class="btn primary" type="button" data-start>{e(t['game_start'])}</button><a class="btn" data-share target="_blank" rel="noopener" hidden>{e(t['game_share'])}</a></div></div>
 </div>"""
 
 
 def game(lang):
     t = T[lang]
-    controls = "".join(f"<div><dt>{e(a)}</dt><dd>{e(b)}</dd></div>" for a, b in t["game_controls"])
-    rules = "".join(f"<li>{e(x)}</li>" for x in t["game_rules"])
-    body = f"""
-<section class="game-page"><div class="wrap">
-  <div class="game-title"><p class="kicker rise">Game</p>{run_title([t['game_t']], 'h1', 'run small')}<p class="lead rise">{e(t['game_p'])}</p></div>
-  {game_box(lang, full=True)}
-  <div class="game-help">
-    <div class="rv"><h2>{e(t['game_rules_t'])}</h2><ul class="game-rules">{rules}</ul></div>
-    <dl class="spec rv">{controls}</dl>
-  </div>
-</div></section>"""
+    help_ = f'<div class="two game-help"><div><h2>{e(t["game_rules_t"])}</h2>{plain_list(t["game_rules"])}</div>{rows(t["game_controls"])}</div>'
+    body = page_head("Game", t["game_t"]) + sec(game_box(lang, full=True) + help_)
     return page(lang, "game/", t["game_t"], t["game_p"], body, "", "game")
 
 
 def not_found(lang):
     t = T[lang]
     title, text, back = t["not_found"]
-    body = f"""<section class="sec lost"><div class="wrap narrow center"><p class="kicker">404</p><h1>{e(title)}</h1><p class="lead">{e(text)}</p>
-<p><a class="btn primary" href="{url(lang)}">{e(back)}</a></p>
-<div class="lost-game"><h2>{e(t['game_t'])}</h2><p>{e(t['game_p'])}</p>{game_box(lang)}
-<p><a class="link" href="{url(lang, 'game/')}">{e(t['game_full'])} {icon('arrow')}</a></p></div>
-</div></section>"""
+    inner = f'<p>{e(text)}</p><p class="actions"><a class="btn primary" href="{url(lang)}">{e(back)}</a></p><h2>{e(t["game_t"])}</h2>{game_box(lang)}'
+    body = page_head("404", title) + sec(inner, "narrow")
     return page(lang, "404.html", title, text, body, "", "lost")
 
 
