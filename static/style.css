@@ -158,7 +158,8 @@ html[lang="en"] .hero-art { grid-column: 1; grid-row: 2; justify-self: center; }
 .ticks svg { color: var(--navy); margin-top: 0.35em; }
 .list { display: grid; gap: 0.4rem; margin-top: 0.75rem; padding-left: 1.2em; list-style: disc; }
 .list li::marker { color: var(--line-2); }
-.must { margin-left: 0.6em; padding: 0 0.5em; border: 1px solid var(--navy); border-radius: 4px; font-size: 0.75rem; color: var(--navy); white-space: nowrap; }
+/* 「必須」は枠を付けず、赤い文字だけにする */
+.must { margin-left: 0.6em; font-size: 0.75rem; font-weight: 700; color: #b3261e; white-space: nowrap; }
 .steps { display: grid; gap: 1.25rem; }
 .steps li { display: flex; gap: 16px; }
 .steps .no { display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: 50%; background: var(--navy); color: #fff; font-family: var(--latin); font-weight: 700; }
