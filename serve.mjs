@@ -2,7 +2,7 @@
 // "/" goes to /ja-jp/ or /en-us/ (cookie, then the browser's language); unknown paths get that language's 404 page.
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
-import { extname, join, normalize, sep } from "node:path";
+import { extname, join, normalize, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const DIST = join(fileURLToPath(new URL(".", import.meta.url)), "dist");
@@ -33,7 +33,10 @@ async function file(path) {
   }
 }
 
-createServer(async (req, res) => {
+/** 寄せ先は、正規化したあとの dist の中のパスから作る（受け取った文字をそのまま Location に入れない） */
+const canonical = (target) => relative(DIST, target).split(sep).filter(Boolean).map((part) => "/" + encodeURIComponent(part)).join("");
+
+async function handle(req, res) {
   const url = new URL(req.url, "http://localhost");
   if (req.method !== "GET" && req.method !== "HEAD") {
     res.writeHead(405, { Allow: "GET, HEAD", ...SECURITY }).end();
@@ -49,10 +52,15 @@ createServer(async (req, res) => {
   } catch {
     pathname = "/";
   }
+  // 制御文字の入ったパスは、どのページでもない
+  if (/[\u0000-\u001f\u007f]/.test(pathname)) {
+    res.writeHead(400, SECURITY).end();
+    return;
+  }
   const target = normalize(join(DIST, pathname));
   let found = target.startsWith(DIST + sep) ? await file(target) : null;
   if (found && /\/(ja-jp|en-us)$/.test(pathname)) {
-    res.writeHead(301, { Location: pathname + "/" + url.search, ...SECURITY }).end();
+    res.writeHead(301, { Location: canonical(target) + "/" + url.search, ...SECURITY }).end();
     return;
   }
   let status = 200;
@@ -65,4 +73,14 @@ createServer(async (req, res) => {
   const cache = found.path.includes(`${sep}assets${sep}`) ? "public, max-age=604800" : "public, max-age=300";
   res.writeHead(status, { "Content-Type": type, "Cache-Control": cache, ...SECURITY });
   res.end(req.method === "HEAD" ? undefined : found.body);
+}
+
+createServer((req, res) => {
+  handle(req, res).catch((error) => {
+    console.error(error);
+    try {
+      if (!res.headersSent) res.writeHead(500, SECURITY);
+      res.end();
+    } catch {}
+  });
 }).listen(PORT, HOST, () => console.log(`ASHIKA Group site on http://${HOST}:${PORT}`));
