@@ -65,7 +65,6 @@ V2 = {
     "ja-jp": {
         "about_k": "About", "about_t": "ASHIKA Group とは",
         "news_k": "News",
-        "sp_line": f"非営利団体 {SUPPORT_NONPROFIT_SERVERS} 台・個人 {SUPPORT_PERSONAL_SERVERS} 台まで無料",
         "join_line": f"参加中はサーバー {JOIN_SERVERS} 台まで無料",
         "notes_t": "出典", "type_p": "欧文は Atkinson Hyperlegible Next、和文は BIZ UDPGothic を使っています。",
         "shot_alt": " のトップページ", "server_alt": "サーバーの内部。CPU のヒートシンク、メモリスロット、冷却ファン",
@@ -73,7 +72,6 @@ V2 = {
     "en-us": {
         "about_k": "About", "about_t": "What is ASHIKA Group?",
         "news_k": "News",
-        "sp_line": f"Free: up to {SUPPORT_NONPROFIT_SERVERS} servers for nonprofits, {SUPPORT_PERSONAL_SERVERS} for individuals",
         "join_line": f"Up to {JOIN_SERVERS} free servers while you take part",
         "notes_t": "Sources", "type_p": "Atkinson Hyperlegible Next for Latin text, BIZ UDPGothic for Japanese.",
         "shot_alt": " home page", "server_alt": "Inside a server: CPU heatsinks, memory slots and cooling fans",
@@ -325,7 +323,6 @@ def home(lang):
 </section>
 <section class="sec doors-sec">
   <div class="wrap doors">
-    <a class="door" href="{url(lang, 'supportprogram/')}"><span class="kicker">{e(t['sp_k'])}</span><b>{e(t['sp_t'])}</b><span>{e(v['sp_line'])}</span>{icon('arrow')}</a>
     <a class="door" href="{url(lang, 'join/')}"><span class="kicker">{e(t['join_k'])}</span><b>{e(t['join_t'])}</b><span>{e(v['join_line'])}</span>{icon('arrow')}</a>
   </div>
 </section>"""

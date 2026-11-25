@@ -145,7 +145,7 @@ html[lang="en"] .hero-art { grid-column: 1; grid-row: 2; justify-self: center; }
 .door b { font-size: clamp(1.25rem, 2.4vw, 1.625rem); font-weight: 400; }
 .door span:not(.kicker) { color: var(--ink-2); font-size: 0.9375rem; }
 .door > svg { position: absolute; right: 24px; top: 50%; translate: 0 -50%; width: 24px; height: 24px; color: var(--navy); }
-@media (min-width: 760px) { .doors { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 760px) { .doors:has(> .door + .door) { grid-template-columns: 1fr 1fr; } }
 
 /* ---------- 部品 ---------- */
 .rows > div { display: grid; gap: 2px 24px; padding: 0.9rem 0; border-top: 1px solid var(--line); }
